@@ -1,62 +1,30 @@
 {
-  "name": "house-dodge",
+  "name": "rot-carnival",
   "tree": {
     "$className": "DataModel",
-    "Players": {
-      "$properties": {
-        "CharacterAutoLoads": false
-      }
+    "ReplicatedStorage": {
+      "$path": "src/ReplicatedStorage"
     },
     "ServerScriptService": {
-      "Server": {
-        "$path": "src/server"
-      }
+      "$path": "src/ServerScriptService"
     },
-    "StarterPlayer": {
-      "StarterPlayerScripts": {
-        "Client": {
-          "$path": "src/client"
-        }
-      }
+    "StarterGui": {
+      "$path": "src/StarterGui"
     },
     "Workspace": {
       "$properties": {
         "FilteringEnabled": true
       },
-      "Baseplate": {
-        "$className": "Part",
-        "$properties": {
-          "Anchored": true,
-          "Color": [
-            0.38823,
-            0.37254,
-            0.38823
-          ],
-          "Locked": true,
-          "Position": [
-            0,
-            -10,
-            0
-          ],
-          "Size": [
-            512,
-            20,
-            512
-          ]
-        }
+      "Carnival": {
+        "$path": "world/Carnival.rbxm"
       }
     },
     "Lighting": {
       "$properties": {
-        "Ambient": [
-          0,
-          0,
-          0
-        ],
-        "Brightness": 2,
+        "Brightness": 3,
         "GlobalShadows": true,
         "Outlines": false,
-        "Technology": "Voxel"
+        "Technology": "ShadowMap"
       }
     },
     "SoundService": {
