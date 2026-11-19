@@ -44,11 +44,11 @@ function BasePedestals.isInsidePlot(plot: any, position: Vector3): boolean
 	return math.abs(localPos.X) < GameConfig.PLOT_WIDTH / 2 and -localPos.Z > 1 and -localPos.Z < GameConfig.PLOT_DEPTH
 end
 
--- The top of a pedestal, facing out toward the street so faces and tags read from the Midway.
+-- The top of a pedestal, facing into the booth toward its owner (who spawns at the back).
 function BasePedestals.pedestalCFrame(plot: any, slot: number): CFrame
 	local base: BasePart = plot.pedestals[slot]
 	local top = base.Position + Vector3.new(0, base.Size.X / 2, 0)
-	return CFrame.lookAt(top, top - plot.inward)
+	return CFrame.lookAt(top, top + plot.inward)
 end
 
 local function sellValue(slot: { id: string, mut: string? }): number

@@ -67,7 +67,7 @@ function ConveyorSpawner.spawnOnBelt(x: number?, forcedId: string?, forcedMut: s
 	end
 	local brainrot = def :: BrainrotCatalog.Brainrot
 	local price = math.floor(brainrot.price * MutationRoller.multiplier(mut))
-	local model = BrainrotModels.build(brainrot, mut, { priceLine = GameConfig.money(price) })
+	local model = BrainrotModels.build(brainrot, mut, { priceLine = "BUY " .. GameConfig.money(price) })
 	local item: BeltItem = { model = model, id = brainrot.id, mut = mut, price = price, x = x or GameConfig.BELT_START_X }
 	placeOnBelt(item)
 	model.Parent = beltFolder

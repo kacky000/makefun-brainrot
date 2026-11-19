@@ -16,9 +16,9 @@ local GameConfig = {
 	PLOT_WIDTH = 92,
 	PLOT_DEPTH = 64,
 	PLOT_GAP = 20, -- from the street edge to the plot's gate
-	PEDESTAL_COLUMNS = 5,
-	PEDESTAL_SPACING_X = 15,
-	PEDESTAL_SPACING_Z = 12,
+	PEDESTAL_COLUMN_XS = { -38, -25, 25, 38 }, -- two banks either side of a red-carpet aisle
+	PEDESTAL_FIRST_ROW = 12,
+	PEDESTAL_SPACING_Z = 10,
 
 	-- Economy
 	START_CASH = 100,

@@ -117,21 +117,55 @@ local function label(parent: Instance, text: string, size: UDim2, pos: UDim2, co
 	return l
 end
 
--- Cash, top centre.
-local cashPanel = panel("Cash", UDim2.fromOffset(390, 104), UDim2.new(0.5, 0, 0, 6), Vector2.new(0.5, 0), INK)
+-- Cash, left column, just under Roblox's own top-left buttons.
+local cashPanel = panel("Cash", UDim2.fromOffset(330, 104), UDim2.fromOffset(12, 62), Vector2.zero, INK)
 cashPanel.BackgroundTransparency = 0.15
 stroke(cashPanel, GOLD, 4)
 local cashLabel = label(cashPanel, "$0", UDim2.new(1, -16, 0, 56), UDim2.fromOffset(8, 2), GOLD)
 local incomeLabel = label(cashPanel, "+$0/s", UDim2.new(1, -16, 0, 28), UDim2.fromOffset(8, 56), rgb(110, 255, 130))
 local rebirthLine = label(cashPanel, "", UDim2.new(1, -16, 0, 18), UDim2.fromOffset(8, 84), rgb(230, 200, 255), Enum.Font.GothamBold)
 
+-- The title logo, top centre: the game's name and what it holds.
+local logo = Instance.new("Frame")
+logo.Name = "TitleLogo"
+logo.BackgroundTransparency = 1
+logo.AnchorPoint = Vector2.new(0.5, 0)
+logo.Position = UDim2.new(0.5, 0, 0, 2)
+logo.Size = UDim2.fromOffset(520, 84)
+logo.Parent = gui
+local logoTitle = label(logo, GameConfig.TITLE, UDim2.new(1, 0, 0, 58), UDim2.new(), GOLD)
+logoTitle.TextStrokeTransparency = 1
+logoTitle.Rotation = -2
+local logoStroke = Instance.new("UIStroke")
+logoStroke.Color = rgb(110, 20, 150)
+logoStroke.Thickness = 5
+logoStroke.Parent = logoTitle
+local logoGradient = Instance.new("UIGradient")
+logoGradient.Color = ColorSequence.new(rgb(255, 240, 90), rgb(255, 120, 200))
+logoGradient.Rotation = 90
+logoGradient.Parent = logoTitle
+local logoSub = label(
+	logo,
+	string.format(
+		"%s · %d BRAINROTS · %d RARITIES · %d MUTATIONS",
+		string.upper(GameConfig.SUBTITLE),
+		BrainrotCatalog.COUNT,
+		#BrainrotCatalog.rarities,
+		#MutationRoller.list
+	),
+	UDim2.new(1, 0, 0, 22),
+	UDim2.fromOffset(0, 58),
+	rgb(255, 255, 255)
+)
+logoSub.TextStrokeColor3 = rgb(110, 20, 150)
+
 -- Event banner and wave bar under it.
-local eventBanner = panel("EventBanner", UDim2.fromOffset(660, 46), UDim2.new(0.5, 0, 0, 116), Vector2.new(0.5, 0), rgb(255, 200, 40))
+local eventBanner = panel("EventBanner", UDim2.fromOffset(540, 38), UDim2.new(0.5, 0, 0, 90), Vector2.new(0.5, 0), rgb(255, 200, 40))
 stroke(eventBanner, rgb(255, 255, 255), 3)
 local eventLabel = label(eventBanner, "", UDim2.new(1, -16, 1, -6), UDim2.fromOffset(8, 3), rgb(255, 255, 255))
 eventBanner.Visible = false
 
-local waveBar = panel("WaveBar", UDim2.fromOffset(560, 38), UDim2.new(0.5, 0, 0, 168), Vector2.new(0.5, 0), rgb(60, 30, 90))
+local waveBar = panel("WaveBar", UDim2.fromOffset(420, 30), UDim2.new(0.5, 0, 0, 134), Vector2.new(0.5, 0), rgb(60, 30, 90))
 stroke(waveBar, rgb(255, 230, 160), 3)
 local waveFill = Instance.new("Frame")
 waveFill.BackgroundColor3 = rgb(255, 214, 90)
@@ -142,15 +176,15 @@ local waveLabel = label(waveBar, "", UDim2.new(1, -16, 1, -6), UDim2.fromOffset(
 waveLabel.ZIndex = 2
 
 -- Next goal card, left, clear of Roblox's top-left buttons.
-local goalCard = panel("NextGoal", UDim2.fromOffset(300, 150), UDim2.fromOffset(12, 120), Vector2.zero, INK)
+local goalCard = panel("NextGoal", UDim2.fromOffset(330, 140), UDim2.fromOffset(12, 174), Vector2.zero, INK)
 goalCard.BackgroundTransparency = 0.15
 stroke(goalCard, rgb(130, 230, 190), 3)
-label(goalCard, "NEXT GOAL", UDim2.new(1, -16, 0, 26), UDim2.fromOffset(8, 4), rgb(130, 230, 190))
-local goalLine = label(goalCard, "", UDim2.new(1, -16, 0, 22), UDim2.fromOffset(8, 32), rgb(255, 255, 255))
-local goalBarBack = panel("GoalBar", UDim2.new(1, -16, 0, 16), UDim2.fromOffset(8, 58), Vector2.zero, rgb(25, 10, 45), goalCard)
+label(goalCard, "NEXT GOAL", UDim2.new(1, -16, 0, 24), UDim2.fromOffset(8, 4), rgb(130, 230, 190))
+local goalLine = label(goalCard, "", UDim2.new(1, -16, 0, 22), UDim2.fromOffset(8, 30), rgb(255, 255, 255))
+local goalBarBack = panel("GoalBar", UDim2.new(1, -16, 0, 14), UDim2.fromOffset(8, 56), Vector2.zero, rgb(25, 10, 45), goalCard)
 local goalBarFill = panel("Fill", UDim2.fromScale(0.3, 1), UDim2.fromScale(0, 0), Vector2.zero, rgb(200, 110, 255), goalBarBack)
-local boothLine = label(goalCard, "", UDim2.new(1, -16, 0, 22), UDim2.fromOffset(8, 82), rgb(255, 225, 120))
-local indexLine = label(goalCard, "", UDim2.new(1, -16, 0, 22), UDim2.fromOffset(8, 110), rgb(150, 220, 255))
+local boothLine = label(goalCard, "", UDim2.new(1, -16, 0, 22), UDim2.fromOffset(8, 78), rgb(255, 225, 120))
+local indexLine = label(goalCard, "", UDim2.new(1, -16, 0, 22), UDim2.fromOffset(8, 106), rgb(150, 220, 255))
 for _, l in { goalLine, boothLine, indexLine } do
 	l.TextXAlignment = Enum.TextXAlignment.Left
 end
@@ -164,7 +198,7 @@ local function sideButton(name: string, title: string, color: Color3, order: num
 	b.Text = ""
 	b.AnchorPoint = Vector2.new(1, 0)
 	b.Size = UDim2.fromOffset(214, 66)
-	b.Position = UDim2.new(1, -12, 0, 120 + (order - 1) * 76)
+	b.Position = UDim2.new(1, -12, 0, 62 + (order - 1) * 76)
 	b.BackgroundColor3 = color
 	b.Parent = gui
 	corner(b, 14)
@@ -175,33 +209,17 @@ local function sideButton(name: string, title: string, color: Color3, order: num
 	buttons[name] = { frame = b, sub = sub }
 end
 
--- Carrying banner and the features strip, bottom.
-local carryBanner = panel("Carrying", UDim2.fromOffset(700, 54), UDim2.new(0.5, 0, 1, -96), Vector2.new(0.5, 1), rgb(255, 214, 50))
+-- Carrying banner, bottom.
+local carryBanner = panel("Carrying", UDim2.fromOffset(700, 54), UDim2.new(0.5, 0, 1, -24), Vector2.new(0.5, 1), rgb(255, 214, 50))
 stroke(carryBanner, INK, 4)
 local carryLabel = label(carryBanner, "", UDim2.new(1, -16, 1, -8), UDim2.fromOffset(8, 4), INK)
 carryLabel.TextStrokeTransparency = 1
 carryBanner.Visible = false
 
-local features = panel("Features", UDim2.fromOffset(980, 30), UDim2.new(0.5, 0, 1, -8), Vector2.new(0.5, 1), rgb(30, 12, 55))
-features.BackgroundTransparency = 0.2
-label(
-	features,
-	string.format(
-		"%d BRAINROTS · %d RARITIES · %d MUTATIONS · POPCORN WAVE · CLOWN THIEVES · GATE LOCK · REBIRTH · %d EVENTS",
-		BrainrotCatalog.COUNT,
-		#BrainrotCatalog.rarities,
-		#MutationRoller.list,
-		4
-	),
-	UDim2.new(1, -16, 1, -6),
-	UDim2.fromOffset(8, 3),
-	rgb(255, 235, 150)
-)
-
 -- Toasts, left under the goal card.
 local toastHolder = Instance.new("Frame")
 toastHolder.BackgroundTransparency = 1
-toastHolder.Position = UDim2.fromOffset(12, 282)
+toastHolder.Position = UDim2.fromOffset(12, 324)
 toastHolder.Size = UDim2.fromOffset(330, 200)
 toastHolder.Parent = gui
 local toastLayout = Instance.new("UIListLayout")
@@ -211,6 +229,9 @@ toastLayout.Parent = toastHolder
 local toastCount = 0
 
 local function toast(text: string, color: Color3?)
+	if player:GetAttribute("Showcase") then
+		return
+	end
 	toastCount += 1
 	local f = panel("Toast", UDim2.new(1, 0, 0, 40), UDim2.new(), Vector2.zero, rgb(30, 12, 55), toastHolder)
 	f.LayoutOrder = -toastCount
@@ -477,7 +498,7 @@ remotes.IncomeTick.OnClientEvent:Connect(function(perSlot: { [string]: number },
 		local base = pedestalPart(tonumber(key) or 0)
 		if base then
 			local bill = Instance.new("BillboardGui")
-			bill.Size = UDim2.fromScale(6, 1.6)
+			bill.Size = UDim2.fromScale(9, 2.4)
 			bill.StudsOffset = Vector3.new(0, 1.5, 0)
 			bill.MaxDistance = 90
 			bill.LightInfluence = 0

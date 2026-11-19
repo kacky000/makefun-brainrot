@@ -54,6 +54,16 @@ local function addEyes(parts: { PartSpec }, y: number, z: number, spacing: numbe
 	table.insert(parts, ball(size * 0.5, spacing - size * 0.1, y + size * 0.07, z - size * 0.33, BLACK, { keep = true }))
 end
 
+-- A goofy open mouth with two buck teeth (and sometimes a tongue) under the eyes.
+local function addMouth(parts: { PartSpec }, y: number, z: number, tongue: boolean)
+	table.insert(parts, block(1.0, 0.42, 0.14, 0, y, z - 0.02, rgb(60, 15, 25), { keep = true }))
+	table.insert(parts, block(0.24, 0.22, 0.1, -0.14, y + 0.12, z - 0.08, WHITE, { keep = true }))
+	table.insert(parts, block(0.24, 0.22, 0.1, 0.14, y + 0.12, z - 0.08, WHITE, { keep = true }))
+	if tongue then
+		table.insert(parts, block(0.5, 0.14, 0.18, 0, y - 0.14, z - 0.1, rgb(250, 90, 120), { keep = true }))
+	end
+end
+
 type Frame = { parts: { PartSpec }, top: number, faceY: number, faceZ: number, width: number }
 
 -- Body archetypes: each lays down a body and says where the face and the top of the head are.
@@ -343,7 +353,11 @@ function BrainrotModels.partsFor(def: Brainrot): { PartSpec }
 	local frame = BODIES[recipe.body](recipe.c1, recipe.c2, recipe.c3)
 	local parts = table.clone(frame.parts)
 	if recipe.eyes ~= false then
-		addEyes(parts, frame.faceY + 0.25, frame.faceZ, 0.42, 0.55)
+		addEyes(parts, frame.faceY + 0.3, frame.faceZ, 0.46, 0.68)
+	end
+	local acc = recipe.acc or {}
+	if not table.find(acc, "mustache") and not table.find(acc, "tongue") then
+		addMouth(parts, frame.faceY - 0.45, frame.faceZ, #def.id % 2 == 0)
 	end
 	for _, name in recipe.acc or {} do
 		local make = ACCESSORIES[name]
@@ -380,48 +394,72 @@ local function heightOf(parts: { PartSpec }): number
 	return top
 end
 
+-- A framed label card over the brainrot: mutation chip, name, rarity and money a second (and a price on
+-- the belt), in a dark rounded card edged in the rarity colour so it reads against any background.
 local function makeTag(def: Brainrot, mutationName: string?, height: number, extraLine: string?): BillboardGui
 	local rarity = BrainrotCatalog.rarity(def.rarity)
 	local mutation = MutationRoller.get(mutationName)
 	local income = def.income * MutationRoller.multiplier(mutationName)
 
+	local lines = 3 + (if mutation then 1 else 0) + (if extraLine then 1 else 0)
+	local lineStuds = 1.45
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "Tag"
-	gui.Size = UDim2.fromScale(14, if extraLine then 6.6 else 5.4)
-	gui.StudsOffset = Vector3.new(0, height + (if extraLine then 3.6 else 3), 0)
-	gui.MaxDistance = 220
+	gui.Size = UDim2.fromScale(11.5, lines * lineStuds + 0.7)
+	gui.StudsOffset = Vector3.new(0, height + (lines * lineStuds) / 2 + 1.2, 0)
+	gui.MaxDistance = 170
 	gui.LightInfluence = 0
 	gui.AlwaysOnTop = false
 
+	local card = Instance.new("Frame")
+	card.Name = "Card"
+	card.Size = UDim2.fromScale(1, 1)
+	card.BackgroundColor3 = rgb(28, 14, 48)
+	card.BackgroundTransparency = 0.18
+	card.Parent = gui
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0.18, 0)
+	corner.Parent = card
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = rarity.color
+	stroke.Thickness = 3
+	stroke.Parent = card
+	local padding = Instance.new("UIPadding")
+	padding.PaddingTop = UDim.new(0.05, 0)
+	padding.PaddingBottom = UDim.new(0.05, 0)
+	padding.PaddingLeft = UDim.new(0.04, 0)
+	padding.PaddingRight = UDim.new(0.04, 0)
+	padding.Parent = card
+
 	local list = Instance.new("UIListLayout")
 	list.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	list.VerticalAlignment = Enum.VerticalAlignment.Bottom
+	list.VerticalAlignment = Enum.VerticalAlignment.Center
 	list.SortOrder = Enum.SortOrder.LayoutOrder
-	list.Parent = gui
+	list.Parent = card
 
-	local function line(order: number, text: string, color: Color3, heightScale: number, font: Enum.Font)
+	local function line(order: number, text: string, color: Color3, weight: number)
 		local label = Instance.new("TextLabel")
 		label.LayoutOrder = order
 		label.BackgroundTransparency = 1
-		label.Size = UDim2.fromScale(1, heightScale)
-		label.Font = font
+		label.Size = UDim2.fromScale(1, weight / lines)
+		label.Font = Enum.Font.FredokaOne
 		label.TextScaled = true
 		label.Text = text
 		label.TextColor3 = color
-		label.TextStrokeTransparency = 0
+		label.TextStrokeTransparency = 0.35
 		label.TextStrokeColor3 = Color3.new(0, 0, 0)
-		label.Parent = gui
+		label.Parent = card
 		return label
 	end
 
 	if mutation then
-		line(0, mutation.tag .. " x" .. mutation.multiplier, mutation.color, 0.2, Enum.Font.FredokaOne)
+		line(0, mutation.tag .. " x" .. mutation.multiplier, mutation.color, 0.85)
 	end
-	line(1, def.name, Color3.new(1, 1, 1), 0.27, Enum.Font.FredokaOne)
-	line(2, string.upper(def.rarity), rarity.color, 0.22, Enum.Font.FredokaOne)
-	line(3, "+" .. GameConfig.perSecond(income), rgb(110, 255, 120), 0.24, Enum.Font.FredokaOne)
+	line(1, def.name, Color3.new(1, 1, 1), 1.05)
+	line(2, string.upper(def.rarity), rarity.color, 0.9)
+	line(3, "+" .. GameConfig.perSecond(income), rgb(120, 255, 130), 1.05)
 	if extraLine then
-		line(4, extraLine, rgb(255, 225, 80), 0.24, Enum.Font.FredokaOne)
+		line(4, extraLine, if string.find(extraLine, "STOLEN") then rgb(255, 80, 90) else rgb(255, 225, 80), 1.0)
 	end
 	return gui
 end
@@ -429,7 +467,7 @@ end
 -- Builds a Model whose PrimaryPart "Root" is an invisible, anchored plate at the feet; every other part
 -- is welded to it, unanchored, massless and non-colliding, so moving Root moves the whole brainrot.
 -- World brainrots stand this much larger than their catalog parts, so they read from across the Midway.
-BrainrotModels.WORLD_SCALE = 1.8
+BrainrotModels.WORLD_SCALE = 2.2
 
 function BrainrotModels.build(def: Brainrot, mutationName: string?, options: { tag: boolean?, priceLine: string?, scale: number? }?): Model
 	local opts = options or {}

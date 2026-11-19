@@ -17,6 +17,8 @@ type Raid = {
 	loot: { id: string, mut: string? }?,
 	lootModel: Model?,
 	bonked: boolean,
+	paused: boolean?,
+	holdAt: Vector3?, -- the tour freezes an escaping clown here, loot held high
 }
 
 local ThiefRaids = {}
@@ -76,19 +78,23 @@ function ThiefRaids.buildThief(): Model
 	piece(Enum.PartType.Block, Vector3.new(1.8, 0.25, 0.2), CFrame.new(0, 4.9, -1.1), Color3.fromRGB(200, 30, 60))
 
 	local tag = Instance.new("BillboardGui")
-	tag.Size = UDim2.fromScale(8, 2)
-	tag.StudsOffset = Vector3.new(0, 8.2, 0)
+	tag.Size = UDim2.fromScale(9, 2.2)
+	tag.StudsOffset = Vector3.new(6, 2.4, 0) -- beside the clown, camera-relative, never behind its body
 	tag.MaxDistance = 160
 	tag.LightInfluence = 0
 	local label = Instance.new("TextLabel")
-	label.BackgroundTransparency = 1
+	label.BackgroundColor3 = Color3.fromRGB(200, 20, 40)
+	label.BackgroundTransparency = 0.05
 	label.Size = UDim2.fromScale(1, 1)
 	label.Font = Enum.Font.FredokaOne
 	label.TextScaled = true
 	label.Text = "SNEAKY CLOWN · THIEF!"
-	label.TextColor3 = Color3.fromRGB(255, 70, 90)
-	label.TextStrokeTransparency = 0
+	label.TextColor3 = Color3.fromRGB(255, 255, 255)
+	label.TextStrokeTransparency = 0.3
 	label.Parent = tag
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0.3, 0)
+	corner.Parent = label
 	tag.Parent = root
 	return model
 end
@@ -137,16 +143,26 @@ local function walkTo(raid: Raid, target: Vector3, speed: number): boolean
 	local root = raid.model.PrimaryPart :: BasePart
 	while not raid.bonked and raid.model.Parent do
 		local dt = RunService.Heartbeat:Wait()
+		if raid.paused then
+			continue
+		end
+		if raid.holdAt and raid.loot and (root.Position - raid.holdAt).Magnitude < 1 then
+			raid.paused = true
+			continue
+		end
 		local pos = root.Position
 		local flat = Vector3.new(target.X, pos.Y, target.Z)
 		local delta = flat - pos
 		if delta.Magnitude < 0.6 then
 			return true
 		end
+		local direction = delta.Unit
 		local step = math.min(delta.Magnitude, speed * dt)
-		local nextPos = pos + delta.Unit * step
+		local nextPos = pos + direction * step
 		local hop = math.abs(math.sin(os.clock() * 12)) * 0.5
-		raid.model:PivotTo(CFrame.lookAt(Vector3.new(nextPos.X, hop, nextPos.Z), Vector3.new(flat.X, hop, flat.Z)))
+		-- Face along the step itself: looking at the target from on top of it would be a degenerate CFrame.
+		local at = Vector3.new(nextPos.X, hop, nextPos.Z)
+		raid.model:PivotTo(CFrame.lookAt(at, at + Vector3.new(direction.X, 0, direction.Z)))
 		for _, player in Players:GetPlayers() do
 			local r = rootOf(player)
 			if r and (r.Position - root.Position).Magnitude < 6 then
@@ -219,7 +235,7 @@ function ThiefRaids.startRaid(victim: Player, forcedSlot: number?): Raid?
 		raid.loot = loot
 		local def = BrainrotCatalog.get(loot.id)
 		if def then
-			local lootModel = BrainrotModels.build(def, loot.mut)
+			local lootModel = BrainrotModels.build(def, loot.mut, { scale = 1.6 })
 			local lootRoot = lootModel.PrimaryPart :: BasePart
 			lootRoot.Anchored = false
 			lootModel:PivotTo((model.PrimaryPart :: BasePart).CFrame * CFrame.new(0, 7.2, 0))
@@ -228,6 +244,7 @@ function ThiefRaids.startRaid(victim: Player, forcedSlot: number?): Raid?
 			weld.Part1 = lootRoot
 			weld.Parent = lootRoot
 			lootModel.Parent = model
+			BrainrotModels.setPriceLine(lootModel, "STOLEN BY A CLOWN!")
 			raid.lootModel = lootModel
 			notify(victim, "The clown grabbed your " .. def.name .. "! CATCH IT!", Color3.fromRGB(255, 60, 80));
 			(Remotes :: any).Sfx:FireClient(victim, "stolen")
@@ -270,7 +287,7 @@ function ThiefRaids.start()
 			end
 			local candidates = {}
 			for player, profile in services.PlayerData.all() do
-				if services.PlayerData.usedPedestals(profile) >= 2 then
+				if services.PlayerData.usedPedestals(profile) >= 2 and not player:GetAttribute("Showcase") then
 					table.insert(candidates, player)
 				end
 			end

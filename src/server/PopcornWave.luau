@@ -40,7 +40,7 @@ function PopcornWave.buildWaveModel(): Model
 	core.CanQuery = false
 	core.Size = Vector3.new(16, height, HALF_WIDTH * 2)
 	core.CFrame = CFrame.new(0, height / 2, 0)
-	core.Color = Color3.fromRGB(255, 214, 100)
+	core.Color = Color3.fromRGB(255, 196, 60)
 	core.Material = Enum.Material.SmoothPlastic
 	core.Parent = model
 	model.PrimaryPart = core
@@ -69,8 +69,8 @@ function PopcornWave.buildWaveModel(): Model
 	for _ = 1, 150 do
 		local z = rng:NextNumber(-HALF_WIDTH, HALF_WIDTH)
 		local y = rng:NextNumber(0.5, height)
-		local white = rng:NextNumber() < 0.75
-		kernel(Vector3.new(-8 + rng:NextNumber(-1.5, 1), math.max(y, 8), z), rng:NextNumber(3, 5.5), if white then Color3.fromRGB(255, 252, 235) else Color3.fromRGB(255, 190, 50))
+		local white = rng:NextNumber() < 0.55
+		kernel(Vector3.new(-8 + rng:NextNumber(-1.5, 1), math.max(y, 8), z), rng:NextNumber(3, 5.5), if white then Color3.fromRGB(255, 244, 200) else Color3.fromRGB(255, 176, 40))
 	end
 	for _ = 1, 110 do
 		local z = rng:NextNumber(-HALF_WIDTH, HALF_WIDTH)

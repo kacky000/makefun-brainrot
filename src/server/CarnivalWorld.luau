@@ -334,7 +334,10 @@ local function buildPlot(index: number, x: number, side: number): Plot
 	end
 
 	part({ Name = "Floor", Size = Vector3.new(width, 0.6, depth), CFrame = at(0, 0.3, depth / 2), Color = color:Lerp(rgb(255, 255, 255), 0.35), Parent = folder })
-	part({ Name = "Carpet", Size = Vector3.new(24, 0.7, 10), CFrame = at(0, 0.35, 4), Color = rgb(230, 40, 60), Material = Enum.Material.Fabric, Parent = folder })
+	part({ Name = "Carpet", Size = Vector3.new(22, 0.7, depth - 2), CFrame = at(0, 0.35, depth / 2), Color = rgb(230, 40, 60), Material = Enum.Material.Fabric, Parent = folder })
+	for _, lx in { -11.5, 11.5 } do
+		part({ Name = "CarpetTrim", Size = Vector3.new(1, 0.75, depth - 2), CFrame = at(lx, 0.38, depth / 2), Color = rgb(255, 215, 60), Material = Enum.Material.Neon, Parent = folder })
+	end
 
 	-- Candy-striped walls with a gap for the gate.
 	local wallH = 3.5
@@ -365,7 +368,10 @@ local function buildPlot(index: number, x: number, side: number): Plot
 			part({ Name = "GatePost", Shape = Enum.PartType.Cylinder, Size = Vector3.new(3.5, 3, 3), CFrame = at(lx, 1.75 + i * 3.5, 0) * CFrame.Angles(0, 0, math.rad(90)), Color = CANDY[i % 2 + 1], Parent = folder })
 		end
 	end
-	local board = part({ Name = "GateSign", Size = Vector3.new(30, 6, 1), CFrame = at(0, 16, 0), Color = rgb(60, 20, 90), Parent = folder })
+	local board = part({ Name = "GateSign", Size = Vector3.new(26, 5, 1), CFrame = at(0, 23, -2), Color = rgb(60, 20, 90), Parent = folder })
+	for _, lx in { -11, 11 } do
+		part({ Name = "SignPole", Size = Vector3.new(0.6, 10, 0.6), CFrame = at(lx, 16, -2), Color = rgb(255, 255, 255), Parent = folder })
+	end
 	local title, sub = sign(board, Enum.NormalId.Back, "EMPTY BOOTH", "step in to claim it", rgb(255, 230, 70), color:Lerp(rgb(60, 20, 90), 0.7))
 	-- The face is Back because the sign's LookVector points inward; mirror for the inside too.
 	sign(board, Enum.NormalId.Front, "YOUR BOOTH", nil)
@@ -385,23 +391,22 @@ local function buildPlot(index: number, x: number, side: number): Plot
 		Name = "LockButton",
 		Shape = Enum.PartType.Cylinder,
 		Size = Vector3.new(1.2, 6, 6),
-		CFrame = at(19, 0.6, 7) * CFrame.Angles(0, 0, math.rad(90)),
+		CFrame = at(15, 0.6, 5) * CFrame.Angles(0, 0, math.rad(90)),
 		Color = rgb(255, 40, 70),
 		Material = Enum.Material.Neon,
 		Parent = folder,
 	})
-	local lockPost = part({ Name = "LockSign", Size = Vector3.new(8, 3, 0.5), CFrame = at(19, 6, 10) * CFrame.Angles(0, math.rad(180), 0), Color = rgb(40, 20, 60), Parent = folder })
+	local lockPost = part({ Name = "LockSign", Size = Vector3.new(8, 3, 0.5), CFrame = at(15, 6, 8) * CFrame.Angles(0, math.rad(180), 0), Color = rgb(40, 20, 60), Parent = folder })
 	sign(lockPost, Enum.NormalId.Front, "LOCK GATE", nil, rgb(255, 80, 100), rgb(40, 20, 60))
-	cylinderUp(4, 0.4, (at(19, 2, 10)).Position, rgb(255, 255, 255), folder)
+	cylinderUp(4, 0.4, (at(15, 2, 8)).Position, rgb(255, 255, 255), folder)
 
-	-- Pedestals: 5 across, 4 rows deep, the front row nearest the gate.
+	-- Pedestals: two banks of two columns either side of the aisle, front row nearest the gate.
 	local pedestals = {}
-	local columns = GameConfig.PEDESTAL_COLUMNS
+	local columnXs = GameConfig.PEDESTAL_COLUMN_XS
 	for slot = 1, GameConfig.MAX_PEDESTALS do
-		local row = (slot - 1) // columns
-		local col = (slot - 1) % columns
-		local lx = (col - (columns - 1) / 2) * GameConfig.PEDESTAL_SPACING_X
-		local d = 15 + row * GameConfig.PEDESTAL_SPACING_Z
+		local row = (slot - 1) // #columnXs
+		local lx = columnXs[(slot - 1) % #columnXs + 1]
+		local d = GameConfig.PEDESTAL_FIRST_ROW + row * GameConfig.PEDESTAL_SPACING_Z
 		local base = part({
 			Name = "Pedestal" .. slot,
 			Shape = Enum.PartType.Cylinder,
@@ -453,9 +458,19 @@ local function buildScenery()
 	buildStringLights()
 	-- Lollipop trees and balloon bunches on the lawns between the street and the booths.
 	local lawn = GameConfig.STREET_HALF_WIDTH + GameConfig.PLOT_GAP / 2
+	local function nearGate(x: number): boolean
+		for _, gx in GameConfig.PLOT_XS do
+			if math.abs(x - gx) < 24 then
+				return true
+			end
+		end
+		return false
+	end
 	for x = -190, 190, 27 do
 		for _, side in { 1, -1 } do
-			if rng:NextNumber() < 0.55 then
+			if nearGate(x) then
+				continue
+			elseif rng:NextNumber() < 0.55 then
 				buildLollipopTree(Vector3.new(x + rng:NextNumber(-4, 4), 0, side * (lawn + rng:NextNumber(-3, 3))), PASTELS[rng:NextInteger(1, #PASTELS)])
 			else
 				buildBalloons(Vector3.new(x, 0, side * lawn), rng)
@@ -489,23 +504,26 @@ local function buildScenery()
 end
 
 local function setLighting()
-	Lighting.ClockTime = 14.5
-	Lighting.Brightness = 3
-	Lighting.Ambient = rgb(120, 110, 140)
-	Lighting.OutdoorAmbient = rgb(170, 150, 180)
+	-- Late-afternoon carnival light: warm sun, long shadows, neon starting to glow.
+	Lighting.ClockTime = 16.9
+	Lighting.GeographicLatitude = 30
+	Lighting.Brightness = 2.6
+	Lighting.Ambient = rgb(130, 105, 135)
+	Lighting.OutdoorAmbient = rgb(190, 150, 160)
 	Lighting.EnvironmentDiffuseScale = 0.6
 	Lighting.EnvironmentSpecularScale = 0.6
 	local atmosphere = Instance.new("Atmosphere")
-	atmosphere.Density = 0.12
-	atmosphere.Color = rgb(255, 210, 235)
-	atmosphere.Decay = rgb(200, 150, 255)
+	atmosphere.Density = 0.2
+	atmosphere.Color = rgb(255, 200, 190)
+	atmosphere.Decay = rgb(220, 140, 220)
 	atmosphere.Glare = 0.3
-	atmosphere.Haze = 0.3
+	atmosphere.Haze = 0.8
 	atmosphere.Parent = Lighting
 	local cc = Instance.new("ColorCorrectionEffect")
 	cc.Saturation = 0.35
 	cc.Contrast = 0.08
-	cc.Brightness = 0.03
+	cc.Brightness = 0.02
+	cc.TintColor = rgb(255, 242, 232)
 	cc.Parent = Lighting
 	local bloom = Instance.new("BloomEffect")
 	bloom.Intensity = 0.4

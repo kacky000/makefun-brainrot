@@ -46,8 +46,8 @@ local function attachModel(player: Player, model: Model)
 	local root = model.PrimaryPart :: BasePart
 	root.Anchored = false
 	root.Massless = true
-	-- Held high, turned to face back over the shoulder so the carrier's camera sees its face.
-	model:PivotTo(rootPart.CFrame * CFrame.new(0, 3.4, 0) * CFrame.Angles(0, math.pi, 0))
+	-- Held high over the head, facing the way the carrier runs.
+	model:PivotTo(rootPart.CFrame * CFrame.new(0, 3.4, 0))
 	local weld = Instance.new("WeldConstraint")
 	weld.Part0 = rootPart
 	weld.Part1 = root
@@ -67,7 +67,7 @@ function CarryService.startCarry(player: Player, carry: { id: string, mut: strin
 		return false
 	end
 	services.PlayerData.setCarrying(player, carry)
-	local model = BrainrotModels.build(def, carry.mut)
+	local model = BrainrotModels.build(def, carry.mut, { scale = 1.4 })
 	model.Name = "Carried"
 	carried[player] = model
 	task.spawn(attachModel, player, model)
@@ -83,7 +83,7 @@ local function clearModel(player: Player)
 end
 
 -- Drops what the player carries. A stolen brainrot runs back to its owner; anything else is lost.
-function CarryService.dropCarry(player: Player, reason: string)
+function CarryService.dropCarry(player: Player, reason: string, silent: boolean?)
 	local profile = services.PlayerData.get(player)
 	if not profile or not profile.carrying then
 		return
@@ -99,7 +99,9 @@ function CarryService.dropCarry(player: Player, reason: string)
 			notify(owner, name .. " escaped the thief and came home!", Color3.fromRGB(120, 255, 140))
 		end
 	end
-	notify(player, reason .. " You dropped " .. name .. "!", Color3.fromRGB(255, 120, 80))
+	if not silent then
+		notify(player, reason .. " You dropped " .. name .. "!", Color3.fromRGB(255, 120, 80))
+	end
 end
 
 function CarryService.deliverCarry(player: Player): boolean
@@ -145,7 +147,7 @@ local function watchDeliveries()
 					-- The character respawned or the model was lost: re-attach.
 					local def = BrainrotCatalog.get(profile.carrying.id)
 					if def and character then
-						local model = BrainrotModels.build(def, profile.carrying.mut)
+						local model = BrainrotModels.build(def, profile.carrying.mut, { scale = 1.4 })
 						model.Name = "Carried"
 						carried[player] = model
 						task.spawn(attachModel, player, model)

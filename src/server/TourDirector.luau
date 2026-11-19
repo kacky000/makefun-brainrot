@@ -97,20 +97,22 @@ function TourDirector.showcase(scene: string)
 		return
 	end
 	profile.rebirths = 2
-	-- Screenshots are public: the booth shows no account name while touring.
+	-- Screenshots are public: the booth shows no account name while touring, and toasts stay hidden.
 	plot.sign.Text = "YOUR BOOTH"
+	player:SetAttribute("Showcase", true)
 	if scene == "cover" then
 		fillBooth(player, 20)
 		discover(player, 29)
-		profile.cash = 48_600_000
+		profile.cash = 21_400_000
 		services.EventScheduler.startEvent("GOLDEN HOUR", 120)
 		local gate = plot.gate.Position
-		local street = gate - plot.inward * 7 + Vector3.new(4, 3, 0)
-		placeCharacter(player, CFrame.lookAt(street, street + plot.inward + Vector3.new(-0.3, 0, 0)))
+		-- Running up the aisle toward the back of a full booth, the Secret held high.
+		local aisle = gate + plot.inward * 40 + Vector3.new(2, 3, 0)
+		placeCharacter(player, CFrame.lookAt(aisle, aisle + plot.inward + Vector3.new(0.2, 0, 0)))
 		if not profile.carrying then
 			services.CarryService.startCarry(player, { id = "kernelking", mut = "Rainbow", source = "belt" })
 		end
-		services.PopcornWave.freezeAt(gate.X + 40)
+		services.PopcornWave.freezeAt(gate.X + 21)
 		profile.lockUntil = 0
 	elseif scene == "base" then
 		fillBooth(player, 20)
@@ -121,8 +123,41 @@ function TourDirector.showcase(scene: string)
 		local inside = plot.gate * CFrame.new(0, 3, -6)
 		placeCharacter(player, inside * CFrame.Angles(0, math.rad(180), 0))
 		services.ThiefRaids.startRaid(player)
+	elseif scene == "midway" then
+		fillBooth(player, 14)
+		discover(player, 24)
+		profile.cash = 1_850_000
+		profile.rebirths = 1
+		services.EventScheduler.startEvent("CANNON FRENZY", 120)
+		if profile.carrying then
+			services.CarryService.dropCarry(player, "", true)
+		end
+		services.CarryService.startCarry(player, { id = "ringrhino", mut = "Gold", source = "belt" })
+		local spot = Vector3.new(-30, 3, plot.inward.Z * 9)
+		placeCharacter(player, CFrame.lookAt(spot, spot + Vector3.new(-1, 0, 0.2 * plot.inward.Z)))
+		services.PopcornWave.freezeAt(30)
+		services.ThiefRaids.startRaid(player)
+	elseif scene == "heist" then
+		-- A clown sneaks out of the booth with a Legendary while the player is across the Midway.
+		fillBooth(player, 16)
+		profile.slots[1] = { id = "toiletronaut", mut = "Gold" }
+		services.BasePedestals.refreshPedestals(player)
+		profile.cash = 4_200_000
+		profile.lockUntil = 0
+		profile.lockCooldownUntil = 0
+		services.EventScheduler.startEvent("BUTTER STORM", 120)
+		if profile.carrying then
+			services.CarryService.dropCarry(player, "", true)
+		end
+		placeCharacter(player, CFrame.new(plot.gate.Position.X + 60, 3, -plot.inward.Z * 60))
+		services.PopcornWave.freezeAt(plot.gate.Position.X + 52)
+		local raid = services.ThiefRaids.startRaid(player, 1)
+		if raid then
+			raid.holdAt = plot.gate.Position - plot.inward * 14
+		end
 	elseif scene == "index" then
 		discover(player, 31)
+		profile.lockUntil = workspace:GetServerTimeNow() + 38
 		player:SetAttribute("OpenPanel", "Index")
 	elseif scene == "raid" then
 		fillBooth(player, 12)
