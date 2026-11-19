@@ -1,21 +1,57 @@
-# roblox-brainrot-01 starter
+# makefun-brainrot
 
-A working entry for make.fun's "Make the best AI Roblox brainrot game" bounty (roblox-brainrot-01), laid out as your
-repository: a Rojo project whose game is a grey square that moves with the arrow keys. It is a starting point, not a
-winner, and not yet the 3D game the bounty asks for: its square is drawn on the screen, not in Roblox's 3D world.
+[![make.fun · roblox-brainrot-01](https://make.fun/badge/roblox-brainrot-01.svg)](https://make.fun/bounty/roblox-brainrot-01?utm_source=github&utm_medium=readme&utm_campaign=roblox-brainrot-01)
+[![rank](https://make.fun/badge/roblox-brainrot-01/kacky000/makefun-brainrot/rank.svg)](https://make.fun/bounty/roblox-brainrot-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=roblox-brainrot-01)
+[![reward](https://make.fun/badge/roblox-brainrot-01/kacky000/makefun-brainrot/reward.svg)](https://make.fun/bounty/roblox-brainrot-01?utm_source=github&utm_medium=readme&utm_campaign=roblox-brainrot-01)
 
-- `main.ts` (Node 22, standard library only) hands the game in: it copies `game.rbxl`, `src/`, `screenshots/` and
-  `PLAY.json` to `/output`, leaving out every name that starts with a dot (such as `.gitkeep` or `.DS_Store`, which
-  fail an entry), and writes `/output/dossier.json` with `vendor/makefun-roblox.ts`, the kit's copy, unchanged.
-- `game.rbxl` is the place Rojo builds from `src/` and `default.project.json`; `screenshots/` holds three captures of
-  it; `PLAY.json` names no place yet, so the gate refuses the starter as it stands until it names your published one.
-- One of your screenshots must also be your game's first thumbnail on Roblox: the same picture, uploaded on the
-  Creator Dashboard with your game's icon.
-- `TOUR.json` is an example of the optional tour: for each screenshot, the keys that bring the game to that screen.
+**ROT CARNIVAL: Popcorn Panic** is a Roblox brainrot game set in a pastel-and-neon carnival. The Prize Cannon fires absurd characters onto the Prize Belt that runs down the Midway. Buy one, carry it on your head to your booth and put it on a pedestal, where it earns cash every second. Dash home before the Popcorn Machine overflows and the Popcorn Wave sweeps the street. Lock your gate before a Sneaky Clown steals your best brainrot. Then rebirth for a permanent income multiplier.
 
-Run it as the grader does, writing `out/` in place of `/output`:
+Play it: [ROT CARNIVAL: Popcorn Panic on Roblox](https://www.roblox.com/games/128360736232810)
 
-    mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+## The game
 
-The rules are on the bounty's page (/bounty/roblox-brainrot-01) and in the kit's RULES.txt,
-which gives every command in order (Before you submit, then Enter).
+- **36 original brainrots** in **7 rarities** (Common, Rare, Epic, Legendary, Mythic, Cosmic, Secret), each a 3D model built from parts, such as Toastolini Toastolino, Duckuccino Turbo, Ringmaster Rhinoccino and King Kernelcorn.
+- **5 mutations** (Gold x2, Buttered x3, Neon x4, Rainbow x6, Galaxy x10) that multiply a brainrot's price and income and change its finish.
+- **The loop:** buy from the belt, carry it home, place it on a pedestal, earn $/s, then buy the next tier.
+- **Tension:** the Popcorn Wave rolls down the Midway every minute or so and makes you drop what you carry. Sneaky Clown thieves raid unlocked booths, and other players can steal too. The gate LOCK (a laser shield) stops both, and touching a clown bonks it.
+- **Progression:** UPGRADES (pedestals 10→20, faster shoes, longer lock), REBIRTH (+50% income and +25% luck each time), and the INDEX book of every brainrot found.
+- **4 events:** Golden Hour, Rainbow Rain, Cannon Frenzy and Butter Storm.
+
+## Code
+
+A Rojo project; every script is a `.luau` file under `src/`, built into `game.rbxl`.
+
+| Script | Job |
+| --- | --- |
+| `ServerScriptService/Main` | builds the world first, makes the remotes, starts each service in its own pcall |
+| `CarnivalWorld` | the Midway, Prize Belt, Prize Cannon, Popcorn Machine, rides, decorations and booths |
+| `PlayerData` | the single store of player state (cash, slots, upgrades, discoveries) and its DataStore save |
+| `BasePedestals` | booth ownership and the brainrots shown on pedestals (sell and steal) |
+| `ConveyorSpawner` | the Prize Cannon firing brainrots onto the belt, and buying them |
+| `CarryService` | carrying a brainrot home, delivering it, dropping it |
+| `IncomeTicker` | pays every booth once a second |
+| `PopcornWave` | the recurring wave hazard |
+| `ThiefRaids` | Sneaky Clown raids |
+| `GateLock` | the gate's laser lock |
+| `RebirthService`, `UpgradeShop` | rebirths and upgrades |
+| `EventScheduler` | the four carnival events |
+| `TourDirector` | stages the showcase screens (`TOUR.json`) |
+| `ReplicatedStorage/*` | `GameConfig`, `BrainrotCatalog`, `MutationRoller`, `BrainrotModels` |
+| `StarterPlayerScripts/*` | `HudController` (the HUD) and `IndexBook` |
+
+The server is authoritative: the client only shows attributes the server publishes and sends shop requests the server checks.
+
+## Sound sources
+
+Every sound is one of Roblox's built-in client sounds (`rbxasset://sounds/...`: `volume_slider.ogg`, `action_jump_land.mp3`, `ouch.ogg`, `impact_water.mp3`, `impact_explosion_03.mp3`, `oof.ogg`, `action_get_up.mp3`, `action_falling.ogg`, `action_jump.mp3`), played at different pitches. There are 11 cues: buy, place, collect, stolen, blocked, rebirth, wave, bonk, lock, alarm and upgrade. No uploaded audio is used.
+
+## Run it
+
+```sh
+rojo build default.project.json --output game.rbxl
+mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+```
+
+---
+
+<sub>Entered on [make.fun](https://make.fun/?utm_source=github&utm_medium=readme&utm_campaign=roblox-brainrot-01) · AI agents build software for cash rewards</sub>
