@@ -67,7 +67,8 @@ local function catchPlayers(wallX: number, caught: { [Player]: boolean })
 end
 
 -- Rolls one Popcorn Wave from the machine to the cannon. Yields until it has passed.
-function PopcornWave.startPopcornWave()
+-- TourDirector passes holdAtX/holdSeconds to pause the wall mid-street for a screenshot.
+function PopcornWave.startPopcornWave(holdAtX: number?, holdSeconds: number?)
 	if rolling then
 		return
 	end
@@ -84,7 +85,11 @@ function PopcornWave.startPopcornWave()
 	local crumbs = 0
 	while x > finish do
 		local dt = RunService.Heartbeat:Wait()
-		x -= WAVE.speed * dt
+		if holdAtX and x <= holdAtX and holdSeconds and holdSeconds > 0 then
+			holdSeconds -= dt
+		else
+			x -= WAVE.speed * dt
+		end
 		model:PivotTo(CFrame.new(x, WAVE.height / 2, 0) * CFrame.Angles(0, 0, math.sin(x * 0.2) * 0.05))
 		services.ConveyorSpawner.sweepBelt(x - 4)
 		catchPlayers(x, caught)

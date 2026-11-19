@@ -69,13 +69,21 @@ function TourDirector.showcase(scene: string)
 			carry.holdDelivery = true
 		end
 		call("EventScheduler", "startEvent", "GoldenHour", 600)
+		state.lockReadyAt = 0
 		call("GateLock", "lockGate", player)
 		call("CarryService", "dropCarried", player, "tour")
-		call("CarryService", "startCarrying", player, { id = "popcornado", mutation = "Gold" })
-		call("PlayerState", "markDiscovered", player, "popcornado")
-		services.notify(player, "receipt", { line = 1, text = "BOUGHT POPCORNADO SUPREMO  -$1.6B", fx = "buy", rarity = "Secret" })
-		services.notify(player, "receipt", { line = 2, text = "PLACED KING KERNELCORN  +$" .. GameConfig.formatCash(BrainrotCatalog.incomePerSecond("kernelcorn", "Gold") * 4) .. "/s", fx = "place", rarity = "Mythic" })
-		task.spawn(call, "PopcornWave", "startPopcornWave")
+		-- A real placement and a real purchase, so both receipts on screen are the game's own.
+		local _, dir = GameConfig.boothOrigin(state.booth)
+		local street = GameConfig.boothPoint(state.booth, 6, -11, 3.5)
+		if player.Character then
+			player.Character:PivotTo(CFrame.lookAt(street, street + Vector3.new(-0.4, 0, dir)))
+		end
+		call("CarryService", "startCarrying", player, { id = "trofeo", mutation = "Gold" })
+		call("CarryService", "deliverCarried", player)
+		local prize = call("ConveyorSpawner", "spawnOnBelt", "popcornado", "Rainbow", street.X)
+		call("PlayerState", "addCash", player, BrainrotCatalog.priceOf("popcornado", "Rainbow", call("EventScheduler", "priceScale")))
+		call("CarryService", "buyFromBelt", player, prize)
+		task.spawn(call, "PopcornWave", "startPopcornWave", street.X + 44, 600)
 	elseif scene == "raid" then
 		if carry then
 			carry.holdDelivery = false

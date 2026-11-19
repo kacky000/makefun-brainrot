@@ -50,7 +50,7 @@ function ThiefRaids.sendThief(player: Player, linger: number?)
 			while os.clock() < untilTime and not raid.done do
 				local bounce = math.abs(math.sin(os.clock() * 9)) * 2.4
 				local at = gateFront + Vector3.new(0, bounce, -dir * bounce)
-				raid.clown:PivotTo(CFrame.lookAt(at, at + Vector3.new(0, 0, dir)))
+				raid.clown:PivotTo(CFrame.lookAt(at, at + Vector3.new(0.3, 0, -dir))) -- recoiling, facing the street
 				RunService.Heartbeat:Wait()
 			end
 			ThiefRaids.walkClown(raid, exit, THIEF.walkSpeed * 1.5)
