@@ -416,7 +416,7 @@ function BrainrotModels.attachNameCard(model: Model, brainrotId: string, mutatio
 	card.Name = "NameCard"
 	card.Size = UDim2.fromScale(8.6 * grow, rows * 1.02 * grow)
 	card.StudsOffsetWorldSpace = Vector3.new(0, (model:GetAttribute("TopY") or 5) + rows * 0.55 * grow + 0.8, 0)
-	card.MaxDistance = 78
+	card.MaxDistance = 48
 	card.LightInfluence = 0
 	card.Adornee = root
 

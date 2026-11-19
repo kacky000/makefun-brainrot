@@ -16,14 +16,15 @@ local raids = {} -- [Player] = raid
 local nextRaidAt: { [Player]: number } = {}
 
 -- Sends one Sneaky Clown at the player's booth. `linger` (seconds) holds a blocked clown at the gate.
-function ThiefRaids.sendThief(player: Player, linger: number?)
+-- `fromSide` (-1 west, 1 east) fixes the side he sneaks in from; left out, it is random.
+function ThiefRaids.sendThief(player: Player, linger: number?, fromSide: number?)
 	local state = services.PlayerState.get(player)
 	if not state or not state.booth or raids[player] then
 		return nil
 	end
 	local boothIndex = state.booth
 	local origin, dir = GameConfig.boothOrigin(boothIndex)
-	local side = if math.random() < 0.5 then -1 else 1
+	local side = fromSide or (if math.random() < 0.5 then -1 else 1)
 	local laneZ = dir * (GameConfig.STREET.halfWidth - 6)
 	local exit = Vector3.new(math.clamp(origin.X + side * 75, -140, 140), 0.3, laneZ)
 	local gateFront = GameConfig.boothPoint(boothIndex, 0, -7, 0.3)
@@ -218,11 +219,11 @@ function ThiefRaids.buildSneakyClown(): Model
 
 	local card = Instance.new("BillboardGui")
 	card.Name = "ClownSign"
-	card.Size = UDim2.fromScale(13, 3.4)
-	card.StudsOffsetWorldSpace = Vector3.new(0, 11.5, 0)
+	card.Size = UDim2.fromScale(9.5, 2.5)
+	card.StudsOffsetWorldSpace = Vector3.new(0, 10.6, 0)
 	card.MaxDistance = 160
 	card.LightInfluence = 0
-	card.AlwaysOnTop = true
+	card.AlwaysOnTop = false -- on-top signs are left out of Studio captures
 	local plate = Instance.new("Frame")
 	plate.Size = UDim2.fromScale(1, 1)
 	plate.BackgroundColor3 = Color3.fromRGB(22, 18, 34)

@@ -87,7 +87,7 @@ function TourDirector.showcase(scene: string)
 		services.GateLock.unlockGate(player)
 		state.lockReadyAt = 0
 		services.GateLock.lockGate(player)
-		local street = GameConfig.boothPoint(booth, 6, -11, 3.5)
+		local street = GameConfig.boothPoint(booth, 8, -12, 3.5)
 		if player.Character then
 			player.Character:PivotTo(CFrame.lookAt(street, street + Vector3.new(-1, 0, -0.45 * dir)))
 		end
@@ -95,7 +95,7 @@ function TourDirector.showcase(scene: string)
 		services.CarryService.startCarrying(player, { id = "trofeo", mutation = "Gold" })
 		services.CarryService.deliverCarried(player)
 		buyOffBelt(player, "popcornado", "Rainbow", street.X)
-		services.ThiefRaids.sendThief(player, 600)
+		services.ThiefRaids.sendThief(player, 600, -1)
 		services.notify(player, "camera", { from = GameConfig.boothPoint(booth, -12, -19, 11), to = GameConfig.boothPoint(booth, 8, 14, 5) })
 	elseif scene == "belt" then
 		local raid = services.ThiefRaids.activeRaid(player)
