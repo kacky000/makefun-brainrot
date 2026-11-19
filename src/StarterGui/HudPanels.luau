@@ -96,7 +96,7 @@ function HudPanels.buildIndexPanel(gui: ScreenGui)
 			card.name.Text = if known then card.entry.name else "???"
 			card.detail.Text = if known then string.upper(card.entry.rarity) .. " $" .. GameConfig.formatCash(card.entry.income) .. "/s" else string.upper(card.entry.rarity)
 		end
-		count.Text = found .. "/" .. BrainrotCatalog.COUNT .. " FOUND"
+		count.Text = found .. "/" .. BrainrotCatalog.COUNT
 	end
 	player:GetAttributeChangedSignal("Index"):Connect(refresh)
 	refresh()

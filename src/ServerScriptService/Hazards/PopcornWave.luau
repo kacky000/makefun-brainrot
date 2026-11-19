@@ -14,6 +14,7 @@ local WAVE = GameConfig.WAVE
 local services = nil
 local wall: Model? = nil
 local rolling = false
+local holdLeft = 0
 
 local function buildWall(): Model
 	local model = Instance.new("Model")
@@ -83,10 +84,15 @@ function PopcornWave.startPopcornWave(holdAtX: number?, holdSeconds: number?)
 	model.Parent = workspace
 	local caught = {}
 	local crumbs = 0
-	while x > finish do
+	holdLeft = holdSeconds or 0
+	while x > finish and holdLeft >= 0 do
 		local dt = RunService.Heartbeat:Wait()
-		if holdAtX and x <= holdAtX and holdSeconds and holdSeconds > 0 then
-			holdSeconds -= dt
+		if holdAtX and x <= holdAtX and holdLeft > 0 then
+			holdLeft -= dt
+			if holdLeft <= 0 then
+				holdAtX = nil
+				holdLeft = 0
+			end
 		else
 			x -= WAVE.speed * dt
 		end
@@ -111,6 +117,13 @@ function PopcornWave.startPopcornWave(holdAtX: number?, holdSeconds: number?)
 	workspace:SetAttribute("WaveActive", false)
 	workspace:SetAttribute("WaveAt", workspace:GetServerTimeNow() + WAVE.interval)
 	services.ConveyorSpawner.refillBelt()
+end
+
+-- Clears a wave that TourDirector is holding on the street, so the next scene starts clean.
+function PopcornWave.clearHeldWave()
+	if rolling and holdLeft > 0 then
+		holdLeft = -1
+	end
 end
 
 function PopcornWave.isRolling(): boolean

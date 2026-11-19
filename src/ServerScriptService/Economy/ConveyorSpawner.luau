@@ -84,9 +84,14 @@ function ConveyorSpawner.sweepBelt(fromX: number)
 	end
 end
 
--- After a wave: the cannon restocks the whole belt at once.
+-- After a wave: the cannon restocks the belt at once, ahead of whatever is already riding it.
 function ConveyorSpawner.refillBelt()
-	for x = BELT.x0 + 12, BELT.x1 - 20, BELT.speed * BELT.spawnEvery do
+	local step = BELT.speed * BELT.spawnEvery
+	local first = BELT.x0 + 12
+	for _, item in items do
+		first = math.max(first, item.x + step)
+	end
+	for x = first, BELT.x1 - 20, step do
 		ConveyorSpawner.spawnOnBelt(nil, nil, x)
 	end
 end
@@ -131,7 +136,7 @@ function ConveyorSpawner.start(allServices)
 			end
 		end
 		sinceSpawn += dt
-		if sinceSpawn >= BELT.spawnEvery * services.EventScheduler.spawnScale() and not workspace:GetAttribute("WaveActive") then
+		if sinceSpawn >= BELT.spawnEvery * services.EventScheduler.spawnScale() then
 			sinceSpawn = 0
 			ConveyorSpawner.spawnOnBelt()
 		end

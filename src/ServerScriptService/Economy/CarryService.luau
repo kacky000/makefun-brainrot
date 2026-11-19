@@ -11,6 +11,7 @@ local BrainrotModels = require(script.Parent.Parent.World.BrainrotModels)
 
 local CarryService = {}
 
+local CARRY_HEIGHT = 6.5
 CarryService.holdDelivery = false -- TourDirector sets this to stage a carrying shot
 local services = nil
 local lastFullWarning: { [Player]: number } = {}
@@ -62,6 +63,11 @@ function CarryService.startCarrying(player: Player, brainrot)
 	end
 	BrainrotModels.attachNameCard(model, brainrot.id, brainrot.mutation, nil, GameConfig.rebirthMultiplier(state.rebirths))
 	root.Massless = true
+	-- Big prizes shrink to an armful while carried; the pedestal shows them at full size again.
+	local height = model:GetExtentsSize().Y
+	if height > CARRY_HEIGHT then
+		model:ScaleTo(CARRY_HEIGHT / height)
+	end
 	model:PivotTo(torso.CFrame * CFrame.new(0, 3.1, 0))
 	model.Parent = character
 	local weld = Instance.new("WeldConstraint")
@@ -101,6 +107,7 @@ function CarryService.deliverCarried(player: Player): boolean
 	local entry = BrainrotCatalog.BY_ID[brainrot.id]
 	local model = brainrot.model
 	if model then
+		model:ScaleTo(1)
 		model.Parent = workspace
 	end
 	local slot = services.BasePedestals.placeBrainrotOnPedestal(player, brainrot)

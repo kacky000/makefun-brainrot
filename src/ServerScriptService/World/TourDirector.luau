@@ -53,6 +53,10 @@ end
 
 -- Brings the running game to one of the three screenshot scenes: "cover", "raid" or "panels".
 function TourDirector.showcase(scene: string)
+	if not services then
+		-- Required from outside the running game (TOUR.json, the command bar): hand over to the live copy.
+		return (ServerStorage:WaitForChild("ServiceCall") :: BindableFunction):Invoke("TourDirector", "showcase", scene)
+	end
 	local player = Players:GetPlayers()[1]
 	if not player then
 		return "no player"
@@ -64,7 +68,9 @@ function TourDirector.showcase(scene: string)
 		thieves.paused = true
 	end
 	TourDirector.stageRichBooth(player)
+	services.notify(player, "panel", { open = if scene == "panels" then { "Index", "Rebirth" } else {} })
 	if scene == "cover" then
+		state.discovered.trofeo = true
 		if carry then
 			carry.holdDelivery = true
 		end
@@ -76,24 +82,30 @@ function TourDirector.showcase(scene: string)
 		local _, dir = GameConfig.boothOrigin(state.booth)
 		local street = GameConfig.boothPoint(state.booth, 6, -11, 3.5)
 		if player.Character then
-			player.Character:PivotTo(CFrame.lookAt(street, street + Vector3.new(-0.4, 0, dir)))
+			player.Character:PivotTo(CFrame.lookAt(street, street + Vector3.new(-1, 0, -0.45 * dir)))
 		end
 		call("CarryService", "startCarrying", player, { id = "trofeo", mutation = "Gold" })
 		call("CarryService", "deliverCarried", player)
 		local prize = call("ConveyorSpawner", "spawnOnBelt", "popcornado", "Rainbow", street.X)
 		call("PlayerState", "addCash", player, BrainrotCatalog.priceOf("popcornado", "Rainbow", call("EventScheduler", "priceScale")))
 		call("CarryService", "buyFromBelt", player, prize)
-		task.spawn(call, "PopcornWave", "startPopcornWave", street.X + 44, 600)
+		task.spawn(call, "PopcornWave", "startPopcornWave", street.X + 34, 600)
+		services.notify(player, "camera", { from = GameConfig.boothPoint(state.booth, -9, -19, 8), to = GameConfig.boothPoint(state.booth, 16, -4, 6) })
 	elseif scene == "raid" then
+		services.notify(player, "camera", { from = GameConfig.boothPoint(state.booth, 12, -18, 11), to = GameConfig.boothPoint(state.booth, -4, 10, 4) })
 		if carry then
 			carry.holdDelivery = false
+		end
+		call("PopcornWave", "clearHeldWave")
+		call("CarryService", "deliverCarried", player)
+		local home = GameConfig.boothPoint(state.booth, 0, 7, 3.5)
+		if player.Character then
+			player.Character:PivotTo(CFrame.lookAt(home, GameConfig.boothPoint(state.booth, 0, -8, 3.5)))
 		end
 		call("GateLock", "unlockGate", player)
 		state.lockReadyAt = 0
 		call("GateLock", "lockGate", player)
 		call("ThiefRaids", "sendThief", player, 600)
-	elseif scene == "panels" then
-		services.notify(player, "panel", { open = { "Index", "Rebirth" } })
 	end
 	return "staged " .. scene
 end

@@ -284,6 +284,13 @@ notifyRemote.OnClientEvent:Connect(function(kind: string, payload)
 		for name, panel in panels do
 			panel.Visible = table.find(payload.open, name) ~= nil
 		end
+	elseif kind == "camera" then
+		-- TourDirector frames its showcase scenes; an empty payload hands the camera back.
+		local camera = workspace.CurrentCamera
+		camera.CameraType = if payload.from then Enum.CameraType.Scriptable else Enum.CameraType.Custom
+		if payload.from then
+			camera.CFrame = CFrame.lookAt(payload.from, payload.to)
+		end
 	end
 	if payload.fx then
 		playSound(payload.fx)
