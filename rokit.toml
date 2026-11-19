@@ -1,0 +1,6 @@
+# Tools for ROT CARNIVAL: Popcorn Panic. `rokit install` fetches them.
+# rojo builds game.rbxl from src/ and world/, lune bakes the carnival world and syntax-checks the scripts.
+
+[tools]
+rojo = "rojo-rbx/rojo@7.7.1"
+lune = "lune-org/lune@0.11.1"
