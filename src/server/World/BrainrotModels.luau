@@ -411,7 +411,7 @@ local function makeTag(def: Brainrot, mutationName: string?, height: number, ext
 	gui.Name = "Tag"
 	gui.Size = UDim2.fromScale(11.5 * size, lines * lineStuds + 0.7 * size)
 	gui.StudsOffset = Vector3.new(0, height + (lines * lineStuds) / 2 + 1.2, 0)
-	gui.MaxDistance = 125
+	gui.MaxDistance = 78
 	gui.LightInfluence = 0
 	gui.AlwaysOnTop = false
 

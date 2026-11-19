@@ -526,6 +526,11 @@ for _, name in { "Cash", "IncomePerSec", "Rebirths", "Pedestals", "PedestalsUsed
 end
 refreshStats()
 
+-- A tour can hide the whole HUD for a clean picture of the world (the game's icon).
+player:GetAttributeChangedSignal("HideHud"):Connect(function()
+	gui.Enabled = player:GetAttribute("HideHud") ~= true
+end)
+
 player:GetAttributeChangedSignal("OpenPanel"):Connect(function()
 	local open = player:GetAttribute("OpenPanel") or ""
 	IndexBook.setOpen(false)

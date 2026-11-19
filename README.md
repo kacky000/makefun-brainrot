@@ -23,21 +23,25 @@ A Rojo project; every script is a `.luau` file under `src/`, built into `game.rb
 
 | Script | Job |
 | --- | --- |
-| `ServerScriptService/Main` | builds the world first, makes the remotes, starts each service in its own pcall |
-| `CarnivalWorld` | the Midway, Prize Belt, Prize Cannon, Popcorn Machine, rides, decorations and booths |
-| `PlayerData` | the single store of player state (cash, slots, upgrades, discoveries) and its DataStore save |
-| `BasePedestals` | booth ownership and the brainrots shown on pedestals (sell and steal) |
-| `ConveyorSpawner` | the Prize Cannon firing brainrots onto the belt, and buying them |
-| `CarryService` | carrying a brainrot home, delivering it, dropping it |
-| `IncomeTicker` | pays every booth once a second |
-| `PopcornWave` | the recurring wave hazard |
-| `ThiefRaids` | Sneaky Clown raids |
-| `GateLock` | the gate's laser lock |
-| `RebirthService`, `UpgradeShop` | rebirths and upgrades |
-| `EventScheduler` | the four carnival events |
-| `TourDirector` | stages the showcase screens (`TOUR.json`) |
-| `ReplicatedStorage/*` | `GameConfig`, `BrainrotCatalog`, `MutationRoller`, `BrainrotModels` |
+| `ServerScriptService/Main` | makes the remotes and starts each service in its own pcall, world first |
+| `Economy/ConveyorSpawner` | the Prize Cannon firing brainrots onto the Prize Belt, and buying them |
+| `Economy/CarryService` | carrying a brainrot home, delivering it to a pedestal, dropping it |
+| `Economy/IncomeTicker` | pays every booth once a second |
+| `Economy/UpgradeShop`, `Economy/RebirthService` | pedestals, shoes and lock upgrades; rebirths |
+| `Events/EventScheduler` | Golden Hour, Rainbow Rain, Cannon Frenzy, Butter Storm |
+| `Hazards/PopcornWave` | the recurring wave that sweeps the Midway |
+| `Hazards/ThiefRaids` | Sneaky Clown raids on booths |
+| `Hazards/GateLock` | the gate's laser lock |
+| `State/PlayerData` | the single store of player state (cash, slots, upgrades, discoveries) and its DataStore save |
+| `State/BasePedestals` | booth ownership, the brainrots on pedestals, sell and steal |
+| `World/CarnivalWorld` | builds the carnival (baked into the place as `world/Carnival.rbxm`) and spins its rides |
+| `World/BrainrotModels`, `World/CastArt`, `World/PartShapes` | builds each brainrot's 3D model and label card |
+| `World/Feedback` | toasts, sounds and receipts sent to players |
+| `World/TourDirector` | stages the showcase screens (`TOUR.json`) |
+| `ReplicatedStorage/*` | `BrainrotCatalog` (the cast), `MutationRoller`, `GameConfig` |
 | `StarterPlayerScripts/*` | `HudController` (the HUD) and `IndexBook` |
+
+The world in `world/Carnival.rbxm` is what `CarnivalWorld.buildCarnival` builds, baked in Studio's edit mode so that the place file carries it. At start `CarnivalWorld` adopts the baked world, or builds a fresh one if it is missing.
 
 The server is authoritative: the client only shows attributes the server publishes and sends shop requests the server checks.
 

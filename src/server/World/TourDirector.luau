@@ -103,6 +103,7 @@ function TourDirector.showcase(scene: string)
 	plot.sign.Text = "YOUR BOOTH"
 	player:SetAttribute("Showcase", true)
 	player:SetAttribute("OpenPanel", "None")
+	player:SetAttribute("HideHud", scene == "icon")
 	if scene == "cover" then
 		-- The loop in one frame: King Kernelcorn bought off the belt and just placed on a pedestal near the
 		-- camera (receipts BOUGHT then PLACED), while the player already carries the next prize home.
@@ -130,6 +131,39 @@ function TourDirector.showcase(scene: string)
 		local aisle = plot.gate * CFrame.new(-2, 3, -38)
 		placeCharacter(player, aisle * CFrame.Angles(0, math.rad(190), 0))
 		profile.lockUntil = 0
+	elseif scene == "dash" then
+		-- The dash home: a fresh Cosmic overhead, the Popcorn Wave towering at the gate behind, a booth of
+		-- earners either side of the carpet.
+		fillBooth(player, 20)
+		profile.slots[11] = nil
+		profile.slots[12] = nil
+		services.BasePedestals.refreshPedestals(player)
+		discover(player, 30)
+		services.EventScheduler.startEvent("GOLDEN HOUR", 120)
+		if profile.carrying then
+			services.CarryService.dropCarry(player, "", true)
+		end
+		profile.cash = 23_800_000
+		local gate = plot.gate.Position
+		local item = services.ConveyorSpawner.spawnOnBelt(gate.X + 10, "coasterraptor", "Gold")
+		profile.cash += item.price
+		services.ConveyorSpawner.buyFromBelt(player, item)
+		local run = plot.gate * CFrame.new(1.5, 3, -24)
+		placeCharacter(player, run * CFrame.Angles(0, math.rad(180), 0))
+		services.PopcornWave.freezeAt(gate.X + 16)
+		profile.lockUntil = 0
+	elseif scene == "icon" then
+		-- The icon: King Kernelcorn alone in close-up, no HUD.
+		fillBooth(player, 20)
+		profile.slots[11] = { id = "kernelking", mut = nil }
+		profile.slots[15] = nil -- the pedestals in front of it stay empty for a clear view
+		profile.slots[19] = nil
+		services.BasePedestals.refreshPedestals(player)
+		services.PopcornWave.clearWave()
+		if profile.carrying then
+			services.CarryService.dropCarry(player, "", true)
+		end
+		placeCharacter(player, plot.gate * CFrame.new(0, 3, -60))
 	elseif scene == "base" then
 		fillBooth(player, 20)
 		discover(player, 31)
