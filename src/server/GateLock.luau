@@ -53,7 +53,12 @@ local function refreshLasers()
 		local plot = services.BasePedestals.plotOf(player)
 		if plot then
 			local locked = profile.lockUntil > now
-			plot.laser.Transparency = if locked then 0.15 else 1
+			plot.laser.Transparency = if locked then 0.8 else 1
+			for _, beam in plot.laser:GetChildren() do
+				if beam:IsA("BasePart") then
+					beam.Transparency = if locked then 0 else 1
+				end
+			end
 			plot.lockButton.Color = if locked then Color3.fromRGB(80, 255, 140) else Color3.fromRGB(255, 40, 70)
 			if profile.lockUntil > 0 and not locked and profile.lockUntil > now - 0.6 then
 				notify(player, "Your gate is OPEN again!", Color3.fromRGB(255, 200, 80))

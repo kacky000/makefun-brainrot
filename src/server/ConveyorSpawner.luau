@@ -50,7 +50,10 @@ function ConveyorSpawner.buyFromBelt(player: Player, item: BeltItem)
 	services.CarryService.startCarry(player, { id = item.id, mut = item.mut, source = "belt" })
 	local def = BrainrotCatalog.get(item.id)
 	if def then
-		notify(player, "Bought " .. def.name .. "! Carry it to your booth!", BrainrotCatalog.rarity(def.rarity).color)
+		local mutation = MutationRoller.get(item.mut)
+		local fullName = (if mutation then mutation.tag .. " " else "") .. def.name
+		notify(player, "Bought " .. def.name .. "! Carry it to your booth!", BrainrotCatalog.rarity(def.rarity).color);
+		(Remotes :: any).Receipt:FireClient(player, "BOUGHT " .. string.upper(fullName), "-" .. GameConfig.money(item.price) .. "  ·  now carry it home!", BrainrotCatalog.rarity(def.rarity).color)
 	end;
 	(Remotes :: any).Sfx:FireClient(player, "buy")
 end

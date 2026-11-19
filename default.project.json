@@ -25,6 +25,11 @@
       "$properties": {
         "RespectFilteringEnabled": true
       }
+    },
+    "Workspace": {
+      "Carnival": {
+        "$path": "world/Carnival.rbxm"
+      }
     }
   }
 }

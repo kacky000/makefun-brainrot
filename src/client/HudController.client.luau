@@ -209,12 +209,70 @@ local function sideButton(name: string, title: string, color: Color3, order: num
 	buttons[name] = { frame = b, sub = sub }
 end
 
--- Carrying banner, bottom.
-local carryBanner = panel("Carrying", UDim2.fromOffset(700, 54), UDim2.new(0.5, 0, 1, -24), Vector2.new(0.5, 1), rgb(255, 214, 50))
+-- Bottom stack: the previous receipt, the newest receipt, then the carrying bar. Each real moment (bought,
+-- placed, stolen, blocked) gets a receipt, so two in a row read as the loop: BOUGHT ... then PLACED ...
+local bottomStack = Instance.new("Frame")
+bottomStack.Name = "BottomStack"
+bottomStack.BackgroundTransparency = 1
+bottomStack.AnchorPoint = Vector2.new(0.5, 1)
+bottomStack.Position = UDim2.new(0.5, 0, 1, -14)
+bottomStack.Size = UDim2.fromOffset(720, 230)
+bottomStack.Parent = gui
+local stackLayout = Instance.new("UIListLayout")
+stackLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+stackLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+stackLayout.SortOrder = Enum.SortOrder.LayoutOrder
+stackLayout.Padding = UDim.new(0, 6)
+stackLayout.Parent = bottomStack
+
+local carryBanner = panel("Carrying", UDim2.fromOffset(640, 44), UDim2.new(), Vector2.zero, rgb(255, 214, 50), bottomStack)
+carryBanner.LayoutOrder = 3
 stroke(carryBanner, INK, 4)
 local carryLabel = label(carryBanner, "", UDim2.new(1, -16, 1, -8), UDim2.fromOffset(8, 4), INK)
 carryLabel.TextStrokeTransparency = 1
 carryBanner.Visible = false
+
+local function receiptPanel(order: number, width: number, height: number): (Frame, UIStroke, TextLabel, TextLabel)
+	local f = panel("Receipt" .. order, UDim2.fromOffset(width, height), UDim2.new(), Vector2.zero, rgb(30, 12, 55), bottomStack)
+	f.LayoutOrder = order
+	f.BackgroundTransparency = 0.05
+	local s = stroke(f, GOLD, 4)
+	local t = label(f, "", UDim2.new(1, -20, 0.58, 0), UDim2.fromScale(0, 0.05), GOLD)
+	t.Position = UDim2.new(0, 10, 0.05, 0)
+	local sub = label(f, "", UDim2.new(1, -20, 0.32, 0), UDim2.new(0, 10, 0.63, 0), rgb(255, 255, 255), Enum.Font.GothamBold)
+	f.Visible = false
+	return f, s, t, sub
+end
+local prevReceipt, prevStroke, prevTitle, prevSub = receiptPanel(1, 470, 46)
+local receipt, receiptStroke, receiptTitle, receiptSub = receiptPanel(2, 560, 58)
+local receiptScale = Instance.new("UIScale")
+receiptScale.Parent = receipt
+local receiptToken = 0
+
+local function showReceipt(title: string, sub: string, color: Color3)
+	receiptToken += 1
+	local token = receiptToken
+	if receipt.Visible then
+		prevTitle.Text = receiptTitle.Text
+		prevTitle.TextColor3 = receiptTitle.TextColor3
+		prevSub.Text = receiptSub.Text
+		prevStroke.Color = receiptStroke.Color
+		prevReceipt.Visible = true
+	end
+	receiptTitle.Text = title
+	receiptTitle.TextColor3 = color
+	receiptSub.Text = sub
+	receiptStroke.Color = color
+	receipt.Visible = true
+	receiptScale.Scale = 0.6
+	TweenService:Create(receiptScale, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+	task.delay(4, function()
+		if token == receiptToken and not player:GetAttribute("Showcase") then
+			receipt.Visible = false
+			prevReceipt.Visible = false
+		end
+	end)
+end
 
 -- Toasts, left under the goal card.
 local toastHolder = Instance.new("Frame")
@@ -460,6 +518,7 @@ RunService.RenderStepped:Connect(function(dt)
 	end
 
 	if Workspace:GetAttribute("WaveActive") then
+		waveBar.Visible = true
 		local flash = math.floor(os.clock() * 4) % 2 == 0
 		waveBar.BackgroundColor3 = if flash then rgb(230, 40, 50) else rgb(150, 20, 40)
 		waveFill.Size = UDim2.fromScale(1, 1)
@@ -468,6 +527,8 @@ RunService.RenderStepped:Connect(function(dt)
 	else
 		local eta = Workspace:GetAttribute("WaveEta") or 0
 		local interval = Workspace:GetAttribute("WaveInterval") or GameConfig.WAVE_INTERVAL
+		-- The countdown only takes screen space in its last stretch, or when no event banner is up.
+		waveBar.Visible = eta < 25 or not eventBanner.Visible
 		waveBar.BackgroundColor3 = rgb(60, 30, 90)
 		waveFill.BackgroundTransparency = 0
 		waveFill.Size = UDim2.fromScale(math.clamp(1 - eta / interval, 0.03, 1), 1)
@@ -485,6 +546,7 @@ remotes.Celebrate.OnClientEvent:Connect(function(title: string, sub: string, col
 	playSound("rebirth")
 end)
 remotes.Sfx.OnClientEvent:Connect(playSound)
+remotes.Receipt.OnClientEvent:Connect(showReceipt)
 
 -- "+$" popups rising from each of the player's earning pedestals.
 local function pedestalPart(slot: number): BasePart?

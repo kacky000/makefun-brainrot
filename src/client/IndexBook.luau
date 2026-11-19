@@ -69,7 +69,7 @@ local function makeCard(parent: Instance, def: BrainrotCatalog.Brainrot, order: 
 	camera.Parent = viewport
 	viewport.CurrentCamera = camera
 
-	local name = text(card, def.name, UDim2.new(1, -6, 0.2, 0), UDim2.new(0, 3, 0.63, 0), Color3.new(1, 1, 1))
+	local name = text(card, def.name, UDim2.new(1, -6, 0.22, 0), UDim2.new(0, 3, 0.62, 0), Color3.new(1, 1, 1))
 	local info = text(card, string.upper(def.rarity) .. " · " .. GameConfig.perSecond(def.income), UDim2.new(1, -6, 0.14, 0), UDim2.new(0, 3, 0.84, 0), rarity.color)
 	info.TextStrokeTransparency = 0
 	cards[def.id] = { viewport = viewport, name = name }

@@ -5,7 +5,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
-local REMOTES = { "Notify", "IncomeTick", "ShopRequest", "Celebrate", "Sfx" }
+local REMOTES = { "Notify", "IncomeTick", "ShopRequest", "Celebrate", "Sfx", "Receipt" }
 
 local function makeRemotes()
 	local folder = Instance.new("Folder")

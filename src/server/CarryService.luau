@@ -67,7 +67,7 @@ function CarryService.startCarry(player: Player, carry: { id: string, mut: strin
 		return false
 	end
 	services.PlayerData.setCarrying(player, carry)
-	local model = BrainrotModels.build(def, carry.mut, { scale = 1.4 })
+	local model = BrainrotModels.build(def, carry.mut, { scale = 1.8 })
 	model.Name = "Carried"
 	carried[player] = model
 	task.spawn(attachModel, player, model)
@@ -133,7 +133,8 @@ local function watchDeliveries()
 	while true do
 		task.wait(0.2)
 		for player, profile in services.PlayerData.all() do
-			if profile.carrying then
+			-- (A tour showcase holds the carry pose for its screenshot instead of delivering.)
+			if profile.carrying and not player:GetAttribute("Showcase") then
 				local character = player.Character
 				local rootPart = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 				local plot = services.BasePedestals.plotOf(player)
@@ -147,7 +148,7 @@ local function watchDeliveries()
 					-- The character respawned or the model was lost: re-attach.
 					local def = BrainrotCatalog.get(profile.carrying.id)
 					if def and character then
-						local model = BrainrotModels.build(def, profile.carrying.mut, { scale = 1.4 })
+						local model = BrainrotModels.build(def, profile.carrying.mut, { scale = 1.8 })
 						model.Name = "Carried"
 						carried[player] = model
 						task.spawn(attachModel, player, model)

@@ -68,6 +68,7 @@ end
 
 local function sign(face: BasePart, faceEnum: Enum.NormalId, title: string, sub: string?, titleColor: Color3?, back: Color3?): (TextLabel, TextLabel?)
 	local gui = Instance.new("SurfaceGui")
+	gui.Name = "Face" .. faceEnum.Name
 	gui.Face = faceEnum
 	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
 	gui.PixelsPerStud = 20
@@ -82,6 +83,7 @@ local function sign(face: BasePart, faceEnum: Enum.NormalId, title: string, sub:
 	stroke.Color = rgb(255, 220, 60)
 	stroke.Parent = frame
 	local label = Instance.new("TextLabel")
+	label.Name = "Title"
 	label.BackgroundTransparency = 1
 	label.Size = UDim2.fromScale(0.94, if sub then 0.62 else 0.9)
 	label.Position = UDim2.fromScale(0.03, 0.04)
@@ -94,6 +96,7 @@ local function sign(face: BasePart, faceEnum: Enum.NormalId, title: string, sub:
 	local subLabel: TextLabel? = nil
 	if sub then
 		local s = label:Clone()
+		s.Name = "Sub"
 		s.Size = UDim2.fromScale(0.94, 0.3)
 		s.Position = UDim2.fromScale(0.03, 0.66)
 		s.Text = sub
@@ -255,7 +258,9 @@ local function buildFerrisWheel(center: Vector3)
 		part({ Name = "Rim", Size = Vector3.new(1.4, chord, 1.4), CFrame = CFrame.new(center + dir * radius) * CFrame.Angles(0, 0, angle), Color = rgb(255, 90, 160), Material = Enum.Material.Neon, Parent = wheel })
 		part({ Name = "Gondola", Size = Vector3.new(6, 5, 7), CFrame = CFrame.new(center + dir * radius - Vector3.new(0, 4, 0)), Color = color, Parent = wheel })
 	end
-	table.insert(rides, { model = wheel, pivot = CFrame.new(center), axis = "Z", speed = 0.12 })
+	wheel:SetAttribute("RidePivot", CFrame.new(center))
+	wheel:SetAttribute("RideAxis", "Z")
+	wheel:SetAttribute("RideSpeed", 0.12)
 end
 
 local function buildCarousel(center: Vector3)
@@ -280,7 +285,9 @@ local function buildCarousel(center: Vector3)
 		part({ Name = "Horse", Size = Vector3.new(2, 3, 6), CFrame = facing, Color = PASTELS[(i - 1) % #PASTELS + 1], Parent = spin })
 		part({ Name = "HorseHead", Size = Vector3.new(1.6, 3, 2), CFrame = facing * CFrame.new(0, 2.2, -3), Color = PASTELS[(i - 1) % #PASTELS + 1], Parent = spin })
 	end
-	table.insert(rides, { model = spin, pivot = CFrame.new(center), axis = "Y", speed = 0.35 })
+	spin:SetAttribute("RidePivot", CFrame.new(center))
+	spin:SetAttribute("RideAxis", "Y")
+	spin:SetAttribute("RideSpeed", 0.35)
 end
 
 local function buildTent(pos: Vector3, size: number, color: Color3)
@@ -327,6 +334,10 @@ local function buildPlot(index: number, x: number, side: number): Plot
 	local width, depth = GameConfig.PLOT_WIDTH, GameConfig.PLOT_DEPTH
 	local folder = Instance.new("Model")
 	folder.Name = "Booth" .. index
+	folder:SetAttribute("Index", index)
+	folder:SetAttribute("Gate", gate)
+	folder:SetAttribute("Inward", inward)
+	folder:SetAttribute("Color", color)
 	folder.Parent = world
 
 	local function at(lx: number, y: number, d: number): CFrame
@@ -381,11 +392,27 @@ local function buildPlot(index: number, x: number, side: number): Plot
 		Size = Vector3.new(24, 10, 0.6),
 		CFrame = at(0, 5, 0),
 		Color = rgb(255, 40, 70),
-		Material = Enum.Material.ForceField,
+		Material = Enum.Material.Neon,
 		Transparency = 1,
 		CanCollide = false,
 		Parent = folder,
 	})
+	-- Bright beams across the gate that light up with the lock.
+	for i = 1, 5 do
+		local beam = part({
+			Name = "LaserBeam",
+			Size = Vector3.new(24, 0.35, 0.35),
+			CFrame = at(0, 1.2 + i * 1.6, 0),
+			Color = rgb(255, 30, 60),
+			Material = Enum.Material.Neon,
+			Transparency = 1,
+			CanCollide = false,
+			CanQuery = false,
+			CanTouch = false,
+			Parent = laser,
+		})
+		beam.Anchored = true
+	end
 
 	local lockButton = part({
 		Name = "LockButton",
@@ -420,18 +447,36 @@ local function buildPlot(index: number, x: number, side: number): Plot
 		table.insert(pedestals, base)
 	end
 
+	folder:SetAttribute("Spawn", at(0, 3, depth - 24) * CFrame.Angles(0, math.rad(180), 0))
+	local _ = title
+	local _ = sub
+	return CarnivalWorld.readPlot(folder)
+end
+
+-- Reads a booth's record back from the instances and attributes buildPlot left on it, so a booth baked
+-- into the place file works exactly like a freshly built one.
+function CarnivalWorld.readPlot(folder: Model): Plot
+	local pedestals = {}
+	for _, child in folder:GetChildren() do
+		local slot = child:GetAttribute("Slot")
+		if slot and child:IsA("BasePart") then
+			pedestals[slot] = child
+		end
+	end
+	local board = folder:FindFirstChild("GateSign") :: BasePart
+	local face = (board:FindFirstChild("FaceBack") :: SurfaceGui):FindFirstChildOfClass("Frame") :: Frame
 	return {
-		index = index,
-		gate = gate,
-		inward = inward,
-		color = color,
+		index = folder:GetAttribute("Index") :: number,
+		gate = folder:GetAttribute("Gate") :: CFrame,
+		inward = folder:GetAttribute("Inward") :: Vector3,
+		color = folder:GetAttribute("Color") :: Color3,
 		folder = folder,
 		pedestals = pedestals,
-		laser = laser,
-		lockButton = lockButton,
-		sign = title,
-		signSub = sub :: TextLabel,
-		spawn = at(0, 3, depth - 24) * CFrame.Angles(0, math.rad(180), 0),
+		laser = folder:FindFirstChild("GateLaser") :: BasePart,
+		lockButton = folder:FindFirstChild("LockButton") :: BasePart,
+		sign = face:FindFirstChild("Title") :: TextLabel,
+		signSub = face:FindFirstChild("Sub") :: TextLabel,
+		spawn = folder:GetAttribute("Spawn") :: CFrame,
 	}
 end
 
@@ -448,9 +493,10 @@ end
 local function buildScenery()
 	local rng = Random.new(42)
 	local back = GameConfig.STREET_HALF_WIDTH + GameConfig.PLOT_GAP + GameConfig.PLOT_DEPTH
-	buildFerrisWheel(Vector3.new(60, 46, back + 46))
-	buildCarousel(Vector3.new(-70, 0, -(back + 36)))
-	buildTent(Vector3.new(-60, 0, back + 40), 26, rgb(255, 80, 120))
+	-- The big rides stand right behind the first booths so they rise over the Midway in most views.
+	buildFerrisWheel(Vector3.new(-80, 46, back + 44))
+	buildCarousel(Vector3.new(-120, 0, -(back + 34)))
+	buildTent(Vector3.new(-40, 0, -(back + 34)), 30, rgb(255, 80, 120))
 	buildTent(Vector3.new(170, 0, back + 30), 22, rgb(120, 140, 255))
 	buildTent(Vector3.new(70, 0, -(back + 34)), 28, rgb(130, 220, 160))
 	buildTent(Vector3.new(-180, 0, back + 20), 20, rgb(255, 170, 60))
@@ -479,10 +525,10 @@ local function buildScenery()
 	end
 	-- A big billboard of the title behind each row, readable from the street.
 	for _, side in { 1, -1 } do
-		local board = part({ Name = "TitleBillboard", Size = Vector3.new(90, 26, 2), Position = Vector3.new(-90, 34, side * (back + 14)), Color = rgb(60, 20, 90) })
+		local board = part({ Name = "TitleBillboard", Size = Vector3.new(90, 26, 2), Position = Vector3.new(40, 34, side * (back + 14)), Color = rgb(60, 20, 90) })
 		sign(board, if side == 1 then Enum.NormalId.Front else Enum.NormalId.Back, GameConfig.TITLE, "36 BRAINROTS · POPCORN WAVE · CLOWN THIEVES", rgb(255, 225, 60), rgb(120, 30, 170))
 		for _, lx in { -40, 40 } do
-			cylinderUp(22, 2, Vector3.new(-90 + lx, 11, side * (back + 14)), rgb(255, 255, 255))
+			cylinderUp(22, 2, Vector3.new(40 + lx, 11, side * (back + 14)), rgb(255, 255, 255))
 		end
 	end
 	-- Confetti over the Midway.
@@ -507,26 +553,26 @@ local function setLighting()
 	-- Late-afternoon carnival light: warm sun, long shadows, neon starting to glow.
 	Lighting.ClockTime = 16.9
 	Lighting.GeographicLatitude = 30
-	Lighting.Brightness = 2.6
+	Lighting.Brightness = 2.2
 	Lighting.Ambient = rgb(130, 105, 135)
 	Lighting.OutdoorAmbient = rgb(190, 150, 160)
 	Lighting.EnvironmentDiffuseScale = 0.6
 	Lighting.EnvironmentSpecularScale = 0.6
 	local atmosphere = Instance.new("Atmosphere")
-	atmosphere.Density = 0.2
+	atmosphere.Density = 0.1
 	atmosphere.Color = rgb(255, 200, 190)
 	atmosphere.Decay = rgb(220, 140, 220)
-	atmosphere.Glare = 0.3
-	atmosphere.Haze = 0.8
+	atmosphere.Glare = 0.1
+	atmosphere.Haze = 0.25
 	atmosphere.Parent = Lighting
 	local cc = Instance.new("ColorCorrectionEffect")
 	cc.Saturation = 0.35
-	cc.Contrast = 0.08
+	cc.Contrast = 0.16
 	cc.Brightness = 0.02
 	cc.TintColor = rgb(255, 242, 232)
 	cc.Parent = Lighting
 	local bloom = Instance.new("BloomEffect")
-	bloom.Intensity = 0.4
+	bloom.Intensity = 0.22
 	bloom.Size = 30
 	bloom.Threshold = 0.9
 	bloom.Parent = Lighting
@@ -537,6 +583,16 @@ end
 
 -- Turns the Ferris wheel and the carousel every frame.
 local function spinRides()
+	for _, model in world:GetDescendants() do
+		if model:IsA("Model") and model:GetAttribute("RideAxis") then
+			table.insert(rides, {
+				model = model,
+				pivot = model:GetAttribute("RidePivot") :: CFrame,
+				axis = model:GetAttribute("RideAxis") :: string,
+				speed = model:GetAttribute("RideSpeed") :: number,
+			})
+		end
+	end
 	local angle = 0
 	RunService.Heartbeat:Connect(function(dt)
 		angle += dt
@@ -554,7 +610,9 @@ local function spinRides()
 	end)
 end
 
-function CarnivalWorld.buildCarnival()
+-- Builds the whole carnival into workspace.Carnival (run at server start, or once in Studio's edit mode to
+-- bake it into the place file as world/Carnival.rbxm).
+function CarnivalWorld.buildCarnival(): Folder
 	world = Instance.new("Folder")
 	world.Name = "Carnival"
 	world.Parent = workspace
@@ -566,6 +624,30 @@ function CarnivalWorld.buildCarnival()
 	buildTitleArch(150, Enum.NormalId.Left)
 	buildPlots()
 	buildScenery()
+	return world
+end
+
+-- Uses the carnival baked into the place when there is one, and builds it otherwise.
+function CarnivalWorld.adoptOrBuild()
+	local baked = workspace:FindFirstChild("Carnival")
+	if baked and baked:IsA("Folder") and baked:FindFirstChild("Booth1") then
+		world = baked
+		table.clear(CarnivalWorld.plots)
+		local booths = {}
+		for _, child in baked:GetChildren() do
+			if child:IsA("Model") and child:GetAttribute("Gate") then
+				table.insert(booths, CarnivalWorld.readPlot(child))
+			end
+		end
+		table.sort(booths, function(a, b)
+			return a.index < b.index
+		end)
+		for _, plot in booths do
+			table.insert(CarnivalWorld.plots, plot)
+		end
+	else
+		CarnivalWorld.buildCarnival()
+	end
 	setLighting()
 end
 
@@ -574,7 +656,7 @@ function CarnivalWorld.folder(): Folder
 end
 
 function CarnivalWorld.init(_services)
-	CarnivalWorld.buildCarnival()
+	CarnivalWorld.adoptOrBuild()
 end
 
 function CarnivalWorld.start()

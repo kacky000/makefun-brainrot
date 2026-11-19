@@ -19,6 +19,7 @@ type Raid = {
 	bonked: boolean,
 	paused: boolean?,
 	holdAt: Vector3?, -- the tour freezes an escaping clown here, loot held high
+	holdWhenBlocked: boolean?, -- the tour freezes a clown that bounced off a locked gate
 }
 
 local ThiefRaids = {}
@@ -138,6 +139,45 @@ function ThiefRaids.bonkThief(raid: Raid, bonker: Player?)
 	end)
 end
 
+-- The clown hits the laser: a "BLOCKED!" burst over it, sparks, and a hop back off the gate.
+function ThiefRaids.showBlocked(raid: Raid, plot: any)
+	local root = raid.model.PrimaryPart :: BasePart
+	raid.model:PivotTo(raid.model:GetPivot() * CFrame.new(0, 0, 7))
+	local bill = Instance.new("BillboardGui")
+	bill.Name = "Blocked"
+	bill.Size = UDim2.fromScale(11, 3.2)
+	bill.StudsOffset = Vector3.new(0, 10.5, 0)
+	bill.LightInfluence = 0
+	bill.MaxDistance = 200
+	local label = Instance.new("TextLabel")
+	label.BackgroundColor3 = Color3.fromRGB(40, 200, 110)
+	label.Size = UDim2.fromScale(1, 1)
+	label.Font = Enum.Font.FredokaOne
+	label.TextScaled = true
+	label.Text = "BLOCKED BY LOCK!"
+	label.TextColor3 = Color3.fromRGB(255, 255, 255)
+	label.TextStrokeTransparency = 0.2
+	label.Parent = bill
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0.3, 0)
+	corner.Parent = label
+	bill.Parent = root
+	local sparks = Instance.new("ParticleEmitter")
+	sparks.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+	sparks.Rate = 0
+	sparks.Speed = NumberRange.new(10, 20)
+	sparks.SpreadAngle = Vector2.new(70, 70)
+	sparks.Color = ColorSequence.new(Color3.fromRGB(255, 60, 90), Color3.fromRGB(255, 220, 120))
+	sparks.LightEmission = 1
+	sparks.Size = NumberSequence.new(1.2, 0)
+	sparks.Parent = plot.laser
+	sparks:Emit(80)
+	task.delay(if raid.holdWhenBlocked then 60 else 6, function()
+		bill:Destroy()
+		sparks:Destroy()
+	end)
+end
+
 -- Walks the clown to a point; false if it was bonked on the way.
 local function walkTo(raid: Raid, target: Vector3, speed: number): boolean
 	local root = raid.model.PrimaryPart :: BasePart
@@ -198,7 +238,13 @@ function ThiefRaids.startRaid(victim: Player, forcedSlot: number?): Raid?
 			return
 		end
 		if services.GateLock.isLocked(victim) then
-			notify(victim, "Your LOCK stopped the Sneaky Clown!", Color3.fromRGB(120, 255, 140))
+			ThiefRaids.showBlocked(raid, plot)
+			notify(victim, "Your LOCK stopped the Sneaky Clown!", Color3.fromRGB(120, 255, 140));
+			(Remotes :: any).Receipt:FireClient(victim, "LOCK STOPPED THE CLOWN!", "your laser shield held the gate", Color3.fromRGB(110, 255, 150))
+			if raid.holdWhenBlocked then
+				raid.paused = true
+				return
+			end
 			walkTo(raid, Vector3.new(entryX, 0, 0), GameConfig.THIEF_RUN_SPEED)
 			if not raid.bonked then
 				model:Destroy()
@@ -247,6 +293,7 @@ function ThiefRaids.startRaid(victim: Player, forcedSlot: number?): Raid?
 			BrainrotModels.setPriceLine(lootModel, "STOLEN BY A CLOWN!")
 			raid.lootModel = lootModel
 			notify(victim, "The clown grabbed your " .. def.name .. "! CATCH IT!", Color3.fromRGB(255, 60, 80));
+			(Remotes :: any).Receipt:FireClient(victim, "STOLEN: " .. string.upper(def.name), "bonk the Sneaky Clown before it escapes!", Color3.fromRGB(255, 70, 90));
 			(Remotes :: any).Sfx:FireClient(victim, "stolen")
 		end
 		if not walkTo(raid, outside, GameConfig.THIEF_RUN_SPEED) then

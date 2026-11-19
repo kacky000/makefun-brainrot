@@ -2,6 +2,8 @@
 -- Stages the game's showcase moments for screenshots and for reviewers (TOUR.json calls showcase):
 --   "cover" - a full booth, Golden Hour, the player dashing home with a Secret while the wave closes in
 --   "base"  - a booth of twenty rare brainrots earning, during Rainbow Rain, a clown raid on the way
+--   "heist" - a Sneaky Clown escaping a booth with a stolen Legendary
+--   "locked" - a locked gate bouncing a clown while a fresh Mythic is placed
 --   "index" - the Brainrot Index book open with most of the cast discovered
 -- Everything it shows is the game's own systems, called with chosen values.
 
@@ -101,18 +103,31 @@ function TourDirector.showcase(scene: string)
 	plot.sign.Text = "YOUR BOOTH"
 	player:SetAttribute("Showcase", true)
 	if scene == "cover" then
+		-- The loop in one frame: King Kernelcorn bought off the belt and just placed on a pedestal near the
+		-- camera (receipts BOUGHT then PLACED), while the player already carries the next prize home.
 		fillBooth(player, 20)
-		discover(player, 29)
-		profile.cash = 21_400_000
-		services.EventScheduler.startEvent("GOLDEN HOUR", 120)
-		local gate = plot.gate.Position
-		-- Running up the aisle toward the back of a full booth, the Secret held high.
-		local aisle = gate + plot.inward * 40 + Vector3.new(2, 3, 0)
-		placeCharacter(player, CFrame.lookAt(aisle, aisle + plot.inward + Vector3.new(0.2, 0, 0)))
-		if not profile.carrying then
-			services.CarryService.startCarry(player, { id = "kernelking", mut = "Rainbow", source = "belt" })
+		for slot = 1, 8 do
+			profile.slots[slot] = nil
 		end
-		services.PopcornWave.freezeAt(gate.X + 21)
+		profile.slots[11] = nil
+		services.BasePedestals.refreshPedestals(player)
+		discover(player, 29)
+		services.EventScheduler.startEvent("GOLDEN HOUR", 120)
+		services.PopcornWave.freezeAt(nil)
+		if profile.carrying then
+			services.CarryService.dropCarry(player, "", true)
+		end
+		profile.cash = 171_400_000
+		local gate = plot.gate.Position
+		local item = services.ConveyorSpawner.spawnOnBelt(gate.X + 10, "kernelking", "Rainbow")
+		services.ConveyorSpawner.buyFromBelt(player, item)
+		task.wait(0.3)
+		services.CarryService.dropCarry(player, "", true)
+		services.BasePedestals.placeOnPedestal(player, "kernelking", "Rainbow", 11)
+		services.CarryService.startCarry(player, { id = "saturnsundae", mut = nil, source = "belt" })
+		-- Walking up the aisle toward the back of the booth, the next prize held high.
+		local aisle = plot.gate * CFrame.new(-2, 3, -38)
+		placeCharacter(player, aisle * CFrame.Angles(0, math.rad(190), 0))
 		profile.lockUntil = 0
 	elseif scene == "base" then
 		fillBooth(player, 20)
@@ -155,9 +170,33 @@ function TourDirector.showcase(scene: string)
 		if raid then
 			raid.holdAt = plot.gate.Position - plot.inward * 14
 		end
+	elseif scene == "locked" then
+		-- The gate is locked; a clown bounces off the laser while a fresh Mythic lands on a pedestal.
+		fillBooth(player, 19)
+		discover(player, 30)
+		profile.cash = 9_800_000
+		if profile.carrying then
+			services.CarryService.dropCarry(player, "", true)
+		end
+		services.EventScheduler.startEvent("RAINBOW RAIN", 120)
+		services.PopcornWave.freezeAt(plot.gate.Position.X - 34)
+		profile.lockUntil = 0
+		profile.lockCooldownUntil = 0
+		services.GateLock.lockGate(player)
+		profile.lockUntil = workspace:GetServerTimeNow() + 38
+		local inside = plot.gate * CFrame.new(-6, 3, -8)
+		placeCharacter(player, inside * CFrame.Angles(0, math.rad(200), 0))
+		services.BasePedestals.placeOnPedestal(player, "fortunetoad", "Neon")
+		local raid = services.ThiefRaids.startRaid(player)
+		if raid then
+			raid.holdWhenBlocked = true
+			local deadline = os.clock() + 40
+			while os.clock() < deadline and not raid.paused and raid.model.Parent do
+				task.wait(0.1)
+			end
+		end
 	elseif scene == "index" then
 		discover(player, 31)
-		profile.lockUntil = workspace:GetServerTimeNow() + 38
 		player:SetAttribute("OpenPanel", "Index")
 	elseif scene == "raid" then
 		fillBooth(player, 12)

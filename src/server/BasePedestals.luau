@@ -191,19 +191,58 @@ function BasePedestals.refreshPedestals(player: Player)
 end
 
 -- Puts a brainrot on the first free pedestal; returns the slot, or nil when the booth is full.
-function BasePedestals.placeOnPedestal(player: Player, id: string, mut: string?): number?
+function BasePedestals.placeOnPedestal(player: Player, id: string, mut: string?, preferredSlot: number?): number?
 	local profile = services.PlayerData.get(player)
 	if not profile then
 		return nil
 	end
 	local slotIndex = services.PlayerData.firstFreePedestal(profile)
+	if preferredSlot and preferredSlot <= profile.pedestals and profile.slots[preferredSlot] == nil then
+		slotIndex = preferredSlot
+	end
 	if not slotIndex then
 		return nil
 	end
 	services.PlayerData.setSlot(player, slotIndex, { id = id, mut = mut })
 	BasePedestals.refreshSlot(player, slotIndex, true)
 	sfx(player, "place")
+	local def = BrainrotCatalog.get(id)
+	if def then
+		local income = def.income * MutationRoller.multiplier(mut) * services.PlayerData.rebirthMultiplier(services.PlayerData.get(player))
+		local color = BrainrotCatalog.rarity(def.rarity).color;
+		(Remotes :: any).Receipt:FireClient(player, "PLACED " .. string.upper(def.name), "+" .. GameConfig.perSecond(income) .. " on pedestal " .. slotIndex, color)
+		BasePedestals.flashPedestal(player, slotIndex, "NEW! +" .. GameConfig.perSecond(income), color)
+	end
 	return slotIndex
+end
+
+-- A short-lived big label over a pedestal ("NEW! +$X/s") so a placement reads from across the booth.
+function BasePedestals.flashPedestal(player: Player, slotIndex: number, text: string, color: Color3)
+	local plot = BasePedestals.plotOf(player)
+	if not plot then
+		return
+	end
+	local base: BasePart = plot.pedestals[slotIndex]
+	local bill = Instance.new("BillboardGui")
+	bill.Name = "Flash"
+	bill.Size = UDim2.fromScale(12, 3)
+	bill.StudsOffset = Vector3.new(0, 2.5, 0)
+	bill.LightInfluence = 0
+	bill.MaxDistance = 200
+	local label = Instance.new("TextLabel")
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.fromScale(1, 1)
+	label.Font = Enum.Font.FredokaOne
+	label.TextScaled = true
+	label.Text = text
+	label.TextColor3 = color
+	label.TextStrokeTransparency = 0
+	label.Parent = bill
+	bill.Parent = base
+	TweenService:Create(bill, TweenInfo.new(2.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { StudsOffset = Vector3.new(0, 7, 0) }):Play()
+	task.delay(4, function()
+		bill:Destroy()
+	end)
 end
 
 function BasePedestals.takeFromPedestal(player: Player, slotIndex: number): { id: string, mut: string? }?
@@ -249,7 +288,8 @@ function BasePedestals.stealFromPedestal(thief: Player, victim: Player, slotInde
 	services.CarryService.startCarry(thief, { id = slot.id, mut = slot.mut, fromUserId = victim.UserId, fromSlot = slotIndex, source = "steal" })
 	local def = BrainrotCatalog.get(slot.id)
 	local name = if def then def.name else "a brainrot"
-	notify(victim, thief.DisplayName .. " is stealing your " .. name .. "! Stop them!", Color3.fromRGB(255, 80, 100))
+	notify(victim, thief.DisplayName .. " is stealing your " .. name .. "! Stop them!", Color3.fromRGB(255, 80, 100));
+	(Remotes :: any).Receipt:FireClient(victim, "STOLEN: " .. string.upper(name), "catch " .. thief.DisplayName .. " before they get home!", Color3.fromRGB(255, 70, 90))
 	sfx(victim, "stolen")
 	notify(thief, "You grabbed " .. name .. "! Run it home!", Color3.fromRGB(255, 225, 80))
 end

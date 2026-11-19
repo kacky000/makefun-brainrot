@@ -402,12 +402,14 @@ local function makeTag(def: Brainrot, mutationName: string?, height: number, ext
 	local income = def.income * MutationRoller.multiplier(mutationName)
 
 	local lines = 3 + (if mutation then 1 else 0) + (if extraLine then 1 else 0)
-	local lineStuds = 1.45
+	-- Rarer brainrots get bigger cards, so the prizes stand out and the commons recede.
+	local size = 0.72 + rarity.order * 0.09
+	local lineStuds = 1.45 * size
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "Tag"
-	gui.Size = UDim2.fromScale(11.5, lines * lineStuds + 0.7)
+	gui.Size = UDim2.fromScale(11.5 * size, lines * lineStuds + 0.7 * size)
 	gui.StudsOffset = Vector3.new(0, height + (lines * lineStuds) / 2 + 1.2, 0)
-	gui.MaxDistance = 170
+	gui.MaxDistance = 125
 	gui.LightInfluence = 0
 	gui.AlwaysOnTop = false
 
