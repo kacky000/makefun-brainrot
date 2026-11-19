@@ -70,28 +70,28 @@ local function playSound(key: string)
 end
 
 -- Title strip: the game's name and what is in it, readable in a thumbnail.
-local title = new("Frame", { Name = "TitleStrip", BackgroundTransparency = 1, Position = UDim2.fromScale(0.3, 0.01), Size = UDim2.fromScale(0.4, 0.125) }, gui)
+local title = new("Frame", { Name = "TitleStrip", BackgroundTransparency = 1, Position = UDim2.fromScale(0.35, 0.006), Size = UDim2.fromScale(0.3, 0.1) }, gui)
 local logo = new("TextLabel", { Name = "Logo", Text = GameConfig.TITLE, TextColor3 = YELLOW, Size = UDim2.fromScale(1, 0.72), Font = Enum.Font.LuckiestGuy }, title)
 new("UIStroke", { Color = Color3.fromRGB(200, 30, 70), Thickness = 4 }, logo)
-local tagline = card(title, "Tagline", UDim2.fromScale(-0.2, 0.74), UDim2.fromScale(1.4, 0.26), Color3.fromRGB(255, 150, 200))
+local tagline = card(title, "Tagline", UDim2.fromScale(-0.4, 0.74), UDim2.fromScale(1.8, 0.27), Color3.fromRGB(255, 150, 200))
 new("TextLabel", { Text = string.format("%s  -  %d BRAINROTS  -  %d RARITIES  -  %d MUTATIONS  -  WAVE, THIEVES, LOCK, REBIRTH", GameConfig.SUBTITLE, BrainrotCatalog.COUNT, #GameConfig.RARITIES, #GameConfig.MUTATIONS), TextColor3 = WHITE, Position = UDim2.fromScale(0.02, 0.08), Size = UDim2.fromScale(0.96, 0.84) }, tagline)
 
 -- Event banner and Popcorn Wave pill.
-local eventBanner = card(gui, "EventBanner", UDim2.fromScale(0.24, 0.145), UDim2.fromScale(0.52, 0.06), YELLOW)
+local eventBanner = card(gui, "EventBanner", UDim2.fromScale(0.3, 0.115), UDim2.fromScale(0.4, 0.046), YELLOW)
 eventBanner.Visible = false
 local eventText = new("TextLabel", { Name = "Text", Text = "", TextColor3 = YELLOW, Position = UDim2.fromScale(0.02, 0.08), Size = UDim2.fromScale(0.96, 0.84) }, eventBanner)
-local wavePill = card(gui, "WavePill", UDim2.fromScale(0.36, 0.215), UDim2.fromScale(0.28, 0.05), Color3.fromRGB(255, 214, 110))
+local wavePill = card(gui, "WavePill", UDim2.fromScale(0.39, 0.168), UDim2.fromScale(0.22, 0.04), Color3.fromRGB(255, 214, 110))
 local waveText = new("TextLabel", { Name = "Text", Text = "POPCORN WAVE IN 1:15", TextColor3 = Color3.fromRGB(255, 240, 200), Position = UDim2.fromScale(0.03, 0.1), Size = UDim2.fromScale(0.94, 0.8) }, wavePill)
 
 -- Cash card: money, money a second, rebirth multiplier.
-local cashCard = card(gui, "CashCard", UDim2.fromScale(0.012, 0.15), UDim2.fromScale(0.223, 0.175), YELLOW)
+local cashCard = card(gui, "CashCard", UDim2.fromScale(0.01, 0.115), UDim2.fromScale(0.185, 0.145), YELLOW)
 local cashText = new("TextLabel", { Name = "Cash", Text = "$0", TextColor3 = YELLOW, Position = UDim2.fromScale(0.05, 0.03), Size = UDim2.fromScale(0.9, 0.5), TextXAlignment = Enum.TextXAlignment.Left, Font = Enum.Font.LuckiestGuy }, cashCard)
 local cashScale = new("UIScale", {}, cashText)
 local incomeText = new("TextLabel", { Name = "Income", Text = "+$0/s", TextColor3 = GREEN, Position = UDim2.fromScale(0.05, 0.52), Size = UDim2.fromScale(0.9, 0.26), TextXAlignment = Enum.TextXAlignment.Left }, cashCard)
 local rebirthText = new("TextLabel", { Name = "Rebirth", Text = "REBIRTH 0  x1 INCOME", TextColor3 = WHITE, Position = UDim2.fromScale(0.05, 0.78), Size = UDim2.fromScale(0.9, 0.18), TextXAlignment = Enum.TextXAlignment.Left }, cashCard)
 
 -- Goal card: what to buy next and how close the player is.
-local goalCard = card(gui, "GoalCard", UDim2.fromScale(0.012, 0.34), UDim2.fromScale(0.223, 0.13), Color3.fromRGB(110, 200, 255))
+local goalCard = card(gui, "GoalCard", UDim2.fromScale(0.01, 0.27), UDim2.fromScale(0.185, 0.1), Color3.fromRGB(110, 200, 255))
 local goalHead = new("TextLabel", { Name = "Head", Text = "NEXT GOAL", TextColor3 = Color3.fromRGB(150, 220, 255), Position = UDim2.fromScale(0.05, 0.05), Size = UDim2.fromScale(0.9, 0.24), TextXAlignment = Enum.TextXAlignment.Left }, goalCard)
 local goalText = new("TextLabel", { Name = "Goal", Text = "", TextColor3 = WHITE, Position = UDim2.fromScale(0.05, 0.3), Size = UDim2.fromScale(0.9, 0.36), TextXAlignment = Enum.TextXAlignment.Left }, goalCard)
 local goalBar = new("Frame", { Name = "Bar", BackgroundColor3 = Color3.fromRGB(50, 44, 76), BorderSizePixel = 0, Position = UDim2.fromScale(0.05, 0.74), Size = UDim2.fromScale(0.9, 0.16) }, goalCard)
@@ -102,14 +102,14 @@ new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, goalFill)
 -- Receipts: the last purchase and the last placement stay on screen for a while.
 local receipts = {}
 for line = 1, 2 do
-	local receipt = card(gui, "Receipt" .. line, UDim2.fromScale(0.012, 0.49 + (line - 1) * 0.068), UDim2.fromScale(0.3, 0.058), if line == 1 then YELLOW else GREEN)
+	local receipt = card(gui, "Receipt" .. line, UDim2.fromScale(0.008, 0.885 + (line - 1) * 0.052), UDim2.fromScale(0.245, 0.044), if line == 1 then YELLOW else GREEN)
 	receipt.Visible = false
 	local text = new("TextLabel", { Name = "Text", Text = "", TextColor3 = if line == 1 then YELLOW else GREEN, Position = UDim2.fromScale(0.03, 0.1), Size = UDim2.fromScale(0.94, 0.8), TextXAlignment = Enum.TextXAlignment.Left }, receipt)
 	receipts[line] = { frame = receipt, text = text, stamp = 0 }
 end
 
 -- Carrying bar.
-local carryBar = card(gui, "CarryBar", UDim2.fromScale(0.27, 0.86), UDim2.fromScale(0.46, 0.07), Color3.fromRGB(255, 150, 200))
+local carryBar = card(gui, "CarryBar", UDim2.fromScale(0.31, 0.815), UDim2.fromScale(0.38, 0.05), Color3.fromRGB(255, 150, 200))
 carryBar.Visible = false
 local carryText = new("TextLabel", { Name = "Text", Text = "", TextColor3 = WHITE, Position = UDim2.fromScale(0.02, 0.1), Size = UDim2.fromScale(0.96, 0.8) }, carryBar)
 
@@ -133,7 +133,7 @@ end
 
 local buttonSubtexts = {}
 local function bigButton(order: number, name: string, color: Color3, onClick: () -> ())
-	local button = new("TextButton", { Name = name .. "Button", Text = "", BackgroundColor3 = color, BackgroundTransparency = 0, AutoButtonColor = true, Position = UDim2.fromScale(0.8, 0.3 + (order - 1) * 0.112), Size = UDim2.fromScale(0.188, 0.1) }, gui)
+	local button = new("TextButton", { Name = name .. "Button", Text = "", BackgroundColor3 = color, BackgroundTransparency = 0, AutoButtonColor = true, Position = UDim2.fromScale(0.262 + (order - 1) * 0.121, 0.88), Size = UDim2.fromScale(0.113, 0.105) }, gui)
 	new("UICorner", { CornerRadius = UDim.new(0.2, 0) }, button)
 	new("UIStroke", { Color = WHITE, Thickness = 3, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, button)
 	local head = new("TextLabel", { Text = string.upper(name), TextColor3 = WHITE, Position = UDim2.fromScale(0.04, 0.04), Size = UDim2.fromScale(0.92, 0.56), Font = Enum.Font.LuckiestGuy }, button)
@@ -156,7 +156,7 @@ bigButton(4, "Upgrades", Color3.fromRGB(250, 140, 40), function()
 end)
 
 -- Toasts: short messages from the server, stacked under the wave pill.
-local toastArea = new("Frame", { Name = "Toasts", BackgroundTransparency = 1, Position = UDim2.fromScale(0.25, 0.29), Size = UDim2.fromScale(0.5, 0.13) }, gui)
+local toastArea = new("Frame", { Name = "Toasts", BackgroundTransparency = 1, Position = UDim2.fromScale(0.31, 0.218), Size = UDim2.fromScale(0.38, 0.1) }, gui)
 new("UIListLayout", { FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0.06, 0), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Center }, toastArea)
 local toastCount = 0
 local function showToast(text: string, tone: string?)
@@ -212,8 +212,8 @@ local function bounceCash()
 end
 
 local function floatGain(amount: number)
-	local gain = new("TextLabel", { Text = "+$" .. GameConfig.formatCash(amount), TextColor3 = GREEN, Position = UDim2.fromScale(0.15, 0.2), Size = UDim2.fromScale(0.09, 0.035), ZIndex = 30 }, gui)
-	TweenService:Create(gain, TweenInfo.new(0.9), { Position = UDim2.fromScale(0.17, 0.12), TextTransparency = 1 }):Play()
+	local gain = new("TextLabel", { Text = "+$" .. GameConfig.formatCash(amount), TextColor3 = GREEN, Position = UDim2.fromScale(0.2, 0.16), Size = UDim2.fromScale(0.09, 0.035), ZIndex = 30 }, gui)
+	TweenService:Create(gain, TweenInfo.new(0.9), { Position = UDim2.fromScale(0.2, 0.1), TextTransparency = 1 }):Play()
 	task.delay(1, gain.Destroy, gain)
 end
 
@@ -395,8 +395,8 @@ RunService.RenderStepped:Connect(function(dt: number)
 	local alarm = workspace:GetAttribute("WaveActive") == true or waveIn <= GameConfig.WAVE.warn
 	if alarm ~= waveAlarm then
 		waveAlarm = alarm
-		wavePill.Position = if alarm then UDim2.fromScale(0.22, 0.215) else UDim2.fromScale(0.36, 0.215)
-		wavePill.Size = if alarm then UDim2.fromScale(0.56, 0.062) else UDim2.fromScale(0.28, 0.05)
+		wavePill.Position = if alarm then UDim2.fromScale(0.3, 0.168) else UDim2.fromScale(0.39, 0.168)
+		wavePill.Size = if alarm then UDim2.fromScale(0.4, 0.046) else UDim2.fromScale(0.22, 0.04)
 		wavePill.BackgroundColor3 = if alarm then Color3.fromRGB(200, 30, 50) else Color3.fromRGB(22, 18, 34)
 		if alarm then
 			playSound("alarm")

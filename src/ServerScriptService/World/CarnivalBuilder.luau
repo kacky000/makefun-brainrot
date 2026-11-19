@@ -104,7 +104,8 @@ local function buildMidway(world, Config)
 	local tileX, tileZ = 12.5, 11
 	for ix = 0, math.floor(halfLength * 2 / tileX) - 1 do
 		for iz = 0, math.floor(halfWidth * 2 / tileZ) - 1 do
-			local color = if (ix + iz) % 2 == 0 then PINK else YELLOW
+			-- A deep plum checker: the bright cast, the belt and the popcorn stand out against it.
+			local color = if (ix + iz) % 2 == 0 then rgb(96, 58, 150) else rgb(72, 42, 118)
 			make(street, "Tile", Vector3.new(tileX, 0.3, tileZ), CFrame.new(-halfLength + tileX * (ix + 0.5), 0.15, -halfWidth + tileZ * (iz + 0.5)), color)
 		end
 	end
@@ -467,22 +468,23 @@ end
 function CarnivalBuilder.dressLighting(lighting)
 	lighting.ClockTime = 16.6
 	lighting.GeographicLatitude = 28
-	lighting.Brightness = 2.6
+	lighting.Brightness = 2.1
+	lighting.ExposureCompensation = -0.12
 	lighting.Ambient = rgb(120, 110, 140)
 	lighting.OutdoorAmbient = rgb(170, 160, 180)
 	lighting.ColorShift_Top = rgb(255, 214, 170)
 	lighting.EnvironmentDiffuseScale = 0.6
 	lighting.EnvironmentSpecularScale = 0.5
 	local atmosphere = Instance.new("Atmosphere")
-	atmosphere.Density = 0.22
+	atmosphere.Density = 0.13
 	atmosphere.Offset = 0.2
 	atmosphere.Color = rgb(255, 214, 220)
 	atmosphere.Decay = rgb(255, 170, 150)
-	atmosphere.Glare = 0.1
-	atmosphere.Haze = 1.2
+	atmosphere.Glare = 0
+	atmosphere.Haze = 0.4
 	atmosphere.Parent = lighting
 	local bloom = Instance.new("BloomEffect")
-	bloom.Intensity = 0.35
+	bloom.Intensity = 0.2
 	bloom.Size = 20
 	bloom.Threshold = 1.3
 	bloom.Parent = lighting

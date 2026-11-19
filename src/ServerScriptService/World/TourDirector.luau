@@ -51,7 +51,18 @@ function TourDirector.stageRichBooth(player: Player)
 	call("IncomeTicker", "refreshIncome", player)
 end
 
--- Brings the running game to one of the three screenshot scenes: "cover", "raid" or "panels".
+-- Buys `id` off the belt for the player with the game's own purchase, so the receipt is real.
+local function buyOffBelt(player: Player, id: string, mutation: string, x: number)
+	local prize = call("ConveyorSpawner", "spawnOnBelt", id, mutation, x)
+	call("PlayerState", "addCash", player, BrainrotCatalog.priceOf(id, mutation, call("EventScheduler", "priceScale")))
+	call("CarryService", "buyFromBelt", player, prize)
+end
+
+-- Brings the running game to one of the three screenshot scenes: "cover", "belt" or "panels".
+--   cover : the player runs a fresh Secret home under a held Popcorn Wave while a Sneaky Clown
+--           bounces off the locked gate of a full booth
+--   belt  : the same run seen from the Prize Belt: priced brainrots riding into the wave
+--   panels: the INDEX and REBIRTH panels over that booth
 function TourDirector.showcase(scene: string)
 	if not services then
 		-- Required from outside the running game (TOUR.json, the command bar): hand over to the live copy.
@@ -61,51 +72,44 @@ function TourDirector.showcase(scene: string)
 	if not player then
 		return "no player"
 	end
-	local state = call("PlayerState", "get", player)
-	local carry = services and services.CarryService
-	local thieves = services and services.ThiefRaids
-	if thieves then
-		thieves.paused = true
-	end
+	local state = services.PlayerState.get(player)
+	local booth = state.booth
+	local _, dir = GameConfig.boothOrigin(booth)
+	services.ThiefRaids.paused = true
+	services.CarryService.holdDelivery = true
 	TourDirector.stageRichBooth(player)
+	state.discovered.trofeo = true
 	services.notify(player, "panel", { open = if scene == "panels" then { "Index", "Rebirth" } else {} })
+	services.CarryService.dropCarried(player, "tour")
+	task.spawn(services.PopcornWave.startPopcornWave, GameConfig.boothPoint(booth, 40, 0, 0).X, 600)
 	if scene == "cover" then
-		state.discovered.trofeo = true
-		if carry then
-			carry.holdDelivery = true
-		end
-		call("EventScheduler", "startEvent", "GoldenHour", 600)
+		services.EventScheduler.startEvent("GoldenHour", 600)
+		services.GateLock.unlockGate(player)
 		state.lockReadyAt = 0
-		call("GateLock", "lockGate", player)
-		call("CarryService", "dropCarried", player, "tour")
-		-- A real placement and a real purchase, so both receipts on screen are the game's own.
-		local _, dir = GameConfig.boothOrigin(state.booth)
-		local street = GameConfig.boothPoint(state.booth, 6, -11, 3.5)
+		services.GateLock.lockGate(player)
+		local street = GameConfig.boothPoint(booth, 6, -11, 3.5)
 		if player.Character then
 			player.Character:PivotTo(CFrame.lookAt(street, street + Vector3.new(-1, 0, -0.45 * dir)))
 		end
-		call("CarryService", "startCarrying", player, { id = "trofeo", mutation = "Gold" })
-		call("CarryService", "deliverCarried", player)
-		local prize = call("ConveyorSpawner", "spawnOnBelt", "popcornado", "Rainbow", street.X)
-		call("PlayerState", "addCash", player, BrainrotCatalog.priceOf("popcornado", "Rainbow", call("EventScheduler", "priceScale")))
-		call("CarryService", "buyFromBelt", player, prize)
-		task.spawn(call, "PopcornWave", "startPopcornWave", street.X + 34, 600)
-		services.notify(player, "camera", { from = GameConfig.boothPoint(state.booth, -9, -19, 8), to = GameConfig.boothPoint(state.booth, 16, -4, 6) })
-	elseif scene == "raid" then
-		services.notify(player, "camera", { from = GameConfig.boothPoint(state.booth, 12, -18, 11), to = GameConfig.boothPoint(state.booth, -4, 10, 4) })
-		if carry then
-			carry.holdDelivery = false
+		-- A real placement and a real purchase, so both receipts on screen are the game's own.
+		services.CarryService.startCarrying(player, { id = "trofeo", mutation = "Gold" })
+		services.CarryService.deliverCarried(player)
+		buyOffBelt(player, "popcornado", "Rainbow", street.X)
+		services.ThiefRaids.sendThief(player, 600)
+		services.notify(player, "camera", { from = GameConfig.boothPoint(booth, -12, -19, 11), to = GameConfig.boothPoint(booth, 8, 14, 5) })
+	elseif scene == "belt" then
+		local raid = services.ThiefRaids.activeRaid(player)
+		if raid then
+			services.ThiefRaids.bonkThief(raid)
 		end
-		call("PopcornWave", "clearHeldWave")
-		call("CarryService", "deliverCarried", player)
-		local home = GameConfig.boothPoint(state.booth, 0, 7, 3.5)
+		local beside = GameConfig.boothPoint(booth, 6, -15, 3.5)
 		if player.Character then
-			player.Character:PivotTo(CFrame.lookAt(home, GameConfig.boothPoint(state.booth, 0, -8, 3.5)))
+			player.Character:PivotTo(CFrame.lookAt(beside, beside + Vector3.new(-0.6, 0, dir)))
 		end
-		call("GateLock", "unlockGate", player)
-		state.lockReadyAt = 0
-		call("GateLock", "lockGate", player)
-		call("ThiefRaids", "sendThief", player, 600)
+		buyOffBelt(player, "kernelcorn", "Gold", beside.X)
+		services.ConveyorSpawner.spawnOnBelt("gelato", "Neon", beside.X - 9)
+		services.ConveyorSpawner.spawnOnBelt("fortuna", "", beside.X - 23)
+		services.notify(player, "camera", { from = GameConfig.boothPoint(booth, -12, -2, 11), to = GameConfig.boothPoint(booth, 14, -25, 3) })
 	end
 	return "staged " .. scene
 end
