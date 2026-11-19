@@ -1,3 +1,0 @@
-# Tools for building this entry. `rojo build default.project.json --output game.rbxl` writes the place from src/.
-[tools]
-rojo = "rojo-rbx/rojo@7.7.1"

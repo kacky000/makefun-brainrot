@@ -18,11 +18,8 @@ import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-roblox.ts';
 
-// ROT CARNIVAL: Popcorn Panic hands in the place Rojo builds from src/ and world/, its three Studio captures
-// (screenshots/1-cover.jpg is also the experience's first thumbnail on Roblox) and the published place's ids.
 const here = fileURLToPath(new URL('.', import.meta.url));
 const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
-mkdirSync(out, { recursive: true });
 
 /** cpSync's filter: leave out every file and directory whose name starts with a dot (.gitkeep, .DS_Store, .git). */
 const notDotted = (path: string): boolean => !basename(path).startsWith('.');
