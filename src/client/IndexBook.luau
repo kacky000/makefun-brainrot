@@ -6,7 +6,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 local BrainrotCatalog = require(ReplicatedStorage:WaitForChild("BrainrotCatalog"))
-local BrainrotModels = require(ReplicatedStorage:WaitForChild("BrainrotModels"))
 local MutationRoller = require(ReplicatedStorage:WaitForChild("MutationRoller"))
 
 local IndexBook = {}
@@ -58,7 +57,7 @@ local function makeCard(parent: Instance, def: BrainrotCatalog.Brainrot, order: 
 	viewport.Parent = card
 	corner(viewport, 6)
 
-	local model = BrainrotModels.build(def, nil, { tag = false, scale = 1 })
+	local model = (ReplicatedStorage:WaitForChild("CastPreviews"):WaitForChild(def.id) :: Model):Clone()
 	model:PivotTo(CFrame.Angles(0, math.rad(-25), 0))
 	model.Parent = viewport
 	local height = model:GetAttribute("Height") :: number
@@ -157,10 +156,14 @@ function IndexBook.refresh(discoveredCsv: string)
 	header.Text = string.format("BRAINROT INDEX  %d/%d", count, BrainrotCatalog.COUNT)
 end
 
-function IndexBook.setOpen(open: boolean)
-	if panel then
-		panel.Visible = open
+-- Centred on its own; slid left (same size) when it shares the screen with the Rebirth panel.
+function IndexBook.setOpen(open: boolean, besidePanel: boolean?)
+	if not panel then
+		return
 	end
+	panel.Visible = open
+	panel.AnchorPoint = if besidePanel then Vector2.new(0, 0.5) else Vector2.new(0.5, 0.5)
+	panel.Position = if besidePanel then UDim2.new(0, 10, 0.57, 0) else UDim2.fromScale(0.455, 0.54)
 end
 
 function IndexBook.isOpen(): boolean

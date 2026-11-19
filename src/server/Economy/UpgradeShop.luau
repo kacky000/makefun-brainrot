@@ -5,17 +5,16 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
+local Feedback = require(game:GetService("ServerScriptService"):WaitForChild("World"):WaitForChild("Feedback"))
 
 local UpgradeShop = {}
 
 local services: { [string]: any } = {}
 local Remotes: Folder
 
-local function notify(player: Player, text: string, color: Color3?)
-	(Remotes :: any).Notify:FireClient(player, text, color or Color3.fromRGB(255, 255, 255))
-end
+local notify = Feedback.notify
 
-local function pay(player: Player, cost: number): boolean
+local function chargeForUpgrade(player: Player, cost: number): boolean
 	if services.PlayerData.trySpend(player, cost) then
 		(Remotes :: any).Sfx:FireClient(player, "upgrade")
 		return true
@@ -30,7 +29,7 @@ function UpgradeShop.buyPedestal(player: Player)
 	if not profile or profile.pedestals >= GameConfig.MAX_PEDESTALS then
 		return
 	end
-	if pay(player, services.PlayerData.nextPedestalCost(profile)) then
+	if chargeForUpgrade(player, services.PlayerData.nextPedestalCost(profile)) then
 		profile.pedestals += 1
 		services.PlayerData.publish(player)
 		services.BasePedestals.refreshPedestals(player)
@@ -44,7 +43,7 @@ function UpgradeShop.buySpeed(player: Player)
 	if not profile or not cost then
 		return
 	end
-	if pay(player, cost) then
+	if chargeForUpgrade(player, cost) then
 		profile.speedLevel += 1
 		services.PlayerData.publish(player)
 		local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
@@ -61,7 +60,7 @@ function UpgradeShop.buyLockTime(player: Player)
 	if not profile or not cost then
 		return
 	end
-	if pay(player, cost) then
+	if chargeForUpgrade(player, cost) then
 		profile.lockLevel += 1
 		services.PlayerData.publish(player)
 		notify(player, "Longer lock! " .. GameConfig.LOCK_LEVELS[profile.lockLevel] .. "s shield", Color3.fromRGB(255, 120, 150))

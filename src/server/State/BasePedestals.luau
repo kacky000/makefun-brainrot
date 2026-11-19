@@ -8,8 +8,9 @@ local TweenService = game:GetService("TweenService")
 
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 local BrainrotCatalog = require(ReplicatedStorage:WaitForChild("BrainrotCatalog"))
-local BrainrotModels = require(ReplicatedStorage:WaitForChild("BrainrotModels"))
+local BrainrotModels = require(game:GetService("ServerScriptService"):WaitForChild("World"):WaitForChild("BrainrotModels"))
 local MutationRoller = require(ReplicatedStorage:WaitForChild("MutationRoller"))
+local Feedback = require(game:GetService("ServerScriptService"):WaitForChild("World"):WaitForChild("Feedback"))
 
 local BasePedestals = {}
 
@@ -18,13 +19,9 @@ local Remotes: Folder
 local owners: { [number]: Player } = {}
 local shown: { [Player]: { [number]: Model } } = {}
 
-local function notify(player: Player, text: string, color: Color3?)
-	(Remotes :: any).Notify:FireClient(player, text, color or Color3.fromRGB(255, 255, 255))
-end
+local notify = Feedback.notify
 
-local function sfx(player: Player, name: string)
-	(Remotes :: any).Sfx:FireClient(player, name)
-end
+local sfx = Feedback.sfx
 
 function BasePedestals.plotOf(player: Player): any
 	local profile = services.PlayerData.get(player)

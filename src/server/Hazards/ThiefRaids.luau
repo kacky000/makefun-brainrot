@@ -9,7 +9,8 @@ local RunService = game:GetService("RunService")
 
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 local BrainrotCatalog = require(ReplicatedStorage:WaitForChild("BrainrotCatalog"))
-local BrainrotModels = require(ReplicatedStorage:WaitForChild("BrainrotModels"))
+local BrainrotModels = require(game:GetService("ServerScriptService"):WaitForChild("World"):WaitForChild("BrainrotModels"))
+local Feedback = require(game:GetService("ServerScriptService"):WaitForChild("World"):WaitForChild("Feedback"))
 
 type Raid = {
 	model: Model,
@@ -29,9 +30,7 @@ local Remotes: Folder
 local raids: { Raid } = {}
 local rng = Random.new()
 
-local function notify(player: Player, text: string, color: Color3?)
-	(Remotes :: any).Notify:FireClient(player, text, color or Color3.fromRGB(255, 255, 255))
-end
+local notify = Feedback.notify
 
 -- A Sneaky Clown: striped onesie, white face, red nose, burglar mask, green hair and a loot sack.
 function ThiefRaids.buildThief(): Model
@@ -142,7 +141,7 @@ end
 -- The clown hits the laser: a "BLOCKED!" burst over it, sparks, and a hop back off the gate.
 function ThiefRaids.showBlocked(raid: Raid, plot: any)
 	local root = raid.model.PrimaryPart :: BasePart
-	raid.model:PivotTo(raid.model:GetPivot() * CFrame.new(0, 0, 7))
+	raid.model:PivotTo(raid.model:GetPivot() * CFrame.new(0, 0, 7) * CFrame.Angles(0, math.pi, 0))
 	local bill = Instance.new("BillboardGui")
 	bill.Name = "Blocked"
 	bill.Size = UDim2.fromScale(11, 3.2)

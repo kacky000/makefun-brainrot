@@ -7,7 +7,8 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local BrainrotCatalog = require(ReplicatedStorage:WaitForChild("BrainrotCatalog"))
-local BrainrotModels = require(ReplicatedStorage:WaitForChild("BrainrotModels"))
+local BrainrotModels = require(game:GetService("ServerScriptService"):WaitForChild("World"):WaitForChild("BrainrotModels"))
+local Feedback = require(game:GetService("ServerScriptService"):WaitForChild("World"):WaitForChild("Feedback"))
 
 local CarryService = {}
 
@@ -16,9 +17,7 @@ local Remotes: Folder
 local carried: { [Player]: Model } = {}
 local attaching: { [Player]: boolean } = {}
 
-local function notify(player: Player, text: string, color: Color3?)
-	(Remotes :: any).Notify:FireClient(player, text, color or Color3.fromRGB(255, 255, 255))
-end
+local notify = Feedback.notify
 
 function CarryService.isCarrying(player: Player): boolean
 	local profile = services.PlayerData.get(player)

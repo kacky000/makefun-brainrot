@@ -102,6 +102,7 @@ function TourDirector.showcase(scene: string)
 	-- Screenshots are public: the booth shows no account name while touring, and toasts stay hidden.
 	plot.sign.Text = "YOUR BOOTH"
 	player:SetAttribute("Showcase", true)
+	player:SetAttribute("OpenPanel", "None")
 	if scene == "cover" then
 		-- The loop in one frame: King Kernelcorn bought off the belt and just placed on a pedestal near the
 		-- camera (receipts BOUGHT then PLACED), while the player already carries the next prize home.
@@ -113,7 +114,7 @@ function TourDirector.showcase(scene: string)
 		services.BasePedestals.refreshPedestals(player)
 		discover(player, 29)
 		services.EventScheduler.startEvent("GOLDEN HOUR", 120)
-		services.PopcornWave.freezeAt(nil)
+		services.PopcornWave.clearWave()
 		if profile.carrying then
 			services.CarryService.dropCarry(player, "", true)
 		end
@@ -196,8 +197,13 @@ function TourDirector.showcase(scene: string)
 			end
 		end
 	elseif scene == "index" then
+		fillBooth(player, 20)
 		discover(player, 31)
-		player:SetAttribute("OpenPanel", "Index")
+		if profile.carrying then
+			services.CarryService.dropCarry(player, "", true)
+		end
+		profile.cash = 71_600_000
+		player:SetAttribute("OpenPanel", "Index+Rebirth")
 	elseif scene == "raid" then
 		fillBooth(player, 12)
 		services.ThiefRaids.startRaid(player)

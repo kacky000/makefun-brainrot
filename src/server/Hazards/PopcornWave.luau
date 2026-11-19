@@ -8,6 +8,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
+local Feedback = require(game:GetService("ServerScriptService"):WaitForChild("World"):WaitForChild("Feedback"))
 
 local PopcornWave = {}
 
@@ -17,16 +18,13 @@ local wave: Model? = nil
 local waveX = 0
 local frozen = false
 local hitThisWave: { [Player]: boolean } = {}
+local restartCountdown = false
 
 local START_X = 200
 local END_X = -215
 local HALF_WIDTH = GameConfig.STREET_HALF_WIDTH + GameConfig.PLOT_GAP - 1
 
-local function broadcast(text: string, color: Color3)
-	for _, player in Players:GetPlayers() do
-		(Remotes :: any).Notify:FireClient(player, text, color)
-	end
-end
+local broadcast = Feedback.broadcast
 
 -- A wall of popcorn: a creamy core, hundreds of kernels on its face and crest, butter drips and spray.
 function PopcornWave.buildWaveModel(): Model
@@ -205,12 +203,24 @@ function PopcornWave.freezeAt(x: number?)
 	end
 end
 
+-- Sweeps the current wave away and restarts the countdown (the tour's calm shots).
+function PopcornWave.clearWave()
+	if wave then
+		wave:Destroy()
+		wave = nil
+	end
+	frozen = false
+	workspace:SetAttribute("WaveActive", false)
+	restartCountdown = true
+end
+
 local function scheduleWaves()
 	while true do
 		local interval = GameConfig.WAVE_INTERVAL / services.EventScheduler.waveFrequency()
 		local due = os.clock() + interval
 		local warned = false
-		while os.clock() < due do
+		restartCountdown = false
+		while os.clock() < due and not restartCountdown do
 			local left = due - os.clock()
 			workspace:SetAttribute("WaveEta", left)
 			workspace:SetAttribute("WaveInterval", interval)
@@ -219,6 +229,9 @@ local function scheduleWaves()
 				broadcast("The Popcorn Machine is rumbling... wave in " .. math.ceil(left) .. "s!", Color3.fromRGB(255, 220, 80))
 			end
 			task.wait(0.25)
+		end
+		if restartCountdown then
+			continue
 		end
 		if not frozen then
 			PopcornWave.startPopcornWave()

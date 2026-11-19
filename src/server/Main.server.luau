@@ -20,34 +20,46 @@ end
 
 -- Start order: the world, then the state, then everything that reads them.
 local ORDER = {
-	"CarnivalWorld",
-	"PlayerData",
-	"EventScheduler",
-	"BasePedestals",
-	"GateLock",
-	"CarryService",
-	"ConveyorSpawner",
-	"IncomeTicker",
-	"PopcornWave",
-	"ThiefRaids",
-	"RebirthService",
-	"UpgradeShop",
-	"TourDirector",
+	"World/CarnivalWorld",
+	"State/PlayerData",
+	"Events/EventScheduler",
+	"State/BasePedestals",
+	"Hazards/GateLock",
+	"Economy/CarryService",
+	"Economy/ConveyorSpawner",
+	"Economy/IncomeTicker",
+	"Hazards/PopcornWave",
+	"Hazards/ThiefRaids",
+	"Economy/RebirthService",
+	"Economy/UpgradeShop",
+	"World/TourDirector",
 }
 
 makeRemotes()
 
 local services: { [string]: any } = {}
-for _, name in ORDER do
-	local ok, result = pcall(require, ServerScriptService:WaitForChild(name))
+local names: { string } = {}
+for _, path in ORDER do
+	local folder, name = string.match(path, "([^/]+)/(.+)")
+	local ok, result = pcall(function()
+		return require(ServerScriptService:WaitForChild(folder :: string):WaitForChild(name :: string))
+	end)
 	if ok then
-		services[name] = result
+		services[name :: string] = result
+		table.insert(names, name :: string)
 	else
-		warn("[Main] could not load " .. name .. ": " .. tostring(result))
+		warn("[Main] could not load " .. path .. ": " .. tostring(result))
 	end
 end
 
-for _, name in ORDER do
+local okPreviews, previewError = pcall(function()
+	require(ServerScriptService:WaitForChild("World"):WaitForChild("BrainrotModels")).publishPreviews()
+end)
+if not okPreviews then
+	warn("[Main] Index previews failed: " .. tostring(previewError))
+end
+
+for _, name in names do
 	local service = services[name]
 	if service and service.init then
 		local ok, err = pcall(service.init, services)
@@ -57,7 +69,7 @@ for _, name in ORDER do
 	end
 end
 
-for _, name in ORDER do
+for _, name in names do
 	local service = services[name]
 	if service and service.start then
 		local ok, err = pcall(service.start)

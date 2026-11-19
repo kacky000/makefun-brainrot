@@ -409,8 +409,55 @@ sideButton("Upgrades", "UPGRADES", rgb(60, 130, 255), 2, function()
 	upgrades.Visible = not upgrades.Visible
 	IndexBook.setOpen(false)
 end)
-sideButton("Rebirth", "REBIRTH", rgb(170, 80, 240), 3, function()
+-- Rebirth panel: what a rebirth costs, what it gives and what it takes, before you commit.
+local rebirthPanel = panel("RebirthPanel", UDim2.fromOffset(300, 300), UDim2.new(1, -12, 0, 380), Vector2.new(1, 0), rgb(80, 30, 140))
+stroke(rebirthPanel, rgb(230, 170, 255), 4)
+rebirthPanel.Visible = false
+local rebirthTitle = label(rebirthPanel, "REBIRTH", UDim2.new(1, -20, 0, 40), UDim2.fromOffset(10, 6), rgb(240, 200, 255))
+local rebirthLines: { TextLabel } = {}
+for i = 1, 5 do
+	local l = label(rebirthPanel, "", UDim2.new(1, -24, 0, 26), UDim2.fromOffset(12, 46 + (i - 1) * 32), rgb(255, 255, 255))
+	l.TextXAlignment = Enum.TextXAlignment.Left
+	rebirthLines[i] = l
+end
+local rebirthGo = Instance.new("TextButton")
+rebirthGo.AnchorPoint = Vector2.new(0.5, 1)
+rebirthGo.Position = UDim2.new(0.5, 0, 1, -10)
+rebirthGo.Size = UDim2.new(1, -24, 0, 44)
+rebirthGo.BackgroundColor3 = rgb(200, 90, 255)
+rebirthGo.Font = Enum.Font.FredokaOne
+rebirthGo.TextScaled = true
+rebirthGo.TextColor3 = rgb(255, 255, 255)
+rebirthGo.Text = "REBIRTH NOW"
+rebirthGo.Parent = rebirthPanel
+corner(rebirthGo, 10)
+rebirthGo.Activated:Connect(function()
 	(Remotes :: any).ShopRequest:FireServer("Rebirth")
+	rebirthPanel.Visible = false
+end)
+
+local function refreshRebirthPanel()
+	local rebirths = player:GetAttribute("Rebirths") or 0
+	local cost = player:GetAttribute("RebirthCost") or 0
+	local cash = player:GetAttribute("Cash") or 0
+	local nextMultiplier = 1 + (rebirths + 1) * GameConfig.REBIRTH_INCOME_BONUS
+	local nextLuck = (rebirths + 1) * GameConfig.REBIRTH_LUCK_BONUS * 100
+	rebirthTitle.Text = "REBIRTH " .. (rebirths + 1)
+	rebirthLines[1].Text = "Cost " .. GameConfig.money(cost) .. "  (you have " .. GameConfig.money(cash) .. ")"
+	rebirthLines[1].TextColor3 = if cash >= cost then rgb(130, 255, 150) else rgb(255, 150, 150)
+	rebirthLines[2].Text = string.format("x%.1f income forever", nextMultiplier)
+	rebirthLines[2].TextColor3 = GOLD
+	rebirthLines[3].Text = string.format("+%d%% luck on every roll", nextLuck)
+	rebirthLines[3].TextColor3 = rgb(150, 230, 255)
+	rebirthLines[4].Text = "Keep: pedestals, shoes, lock, Index"
+	rebirthLines[5].Text = "Reset: cash and brainrots"
+	rebirthLines[5].TextColor3 = rgb(255, 190, 190)
+end
+
+sideButton("Rebirth", "REBIRTH", rgb(170, 80, 240), 3, function()
+	refreshRebirthPanel()
+	rebirthPanel.Visible = not rebirthPanel.Visible
+	upgrades.Visible = false
 end)
 sideButton("Index", "INDEX", rgb(40, 190, 110), 4, function()
 	IndexBook.setOpen(not IndexBook.isOpen())
@@ -480,15 +527,23 @@ end
 refreshStats()
 
 player:GetAttributeChangedSignal("OpenPanel"):Connect(function()
-	if player:GetAttribute("OpenPanel") == "Index" then
-		IndexBook.setOpen(true)
+	local open = player:GetAttribute("OpenPanel") or ""
+	IndexBook.setOpen(false)
+	rebirthPanel.Visible = false
+	upgrades.Visible = false
+	if string.find(open, "Index") then
+		IndexBook.setOpen(true, string.find(open, "Rebirth") ~= nil)
+	end
+	if string.find(open, "Rebirth") then
+		refreshRebirthPanel()
+		rebirthPanel.Visible = true
 	end
 end)
 
 -- Per-frame: the rolling cash counter, the lock button, the event banner and the wave bar.
 RunService.RenderStepped:Connect(function(dt)
 	local viewport = Workspace.CurrentCamera and Workspace.CurrentCamera.ViewportSize or Vector2.new(1280, 720)
-	scale.Scale = math.clamp(math.min(viewport.Y / 720, viewport.X / 1280), 0.55, 1.6)
+	scale.Scale = math.clamp(math.min(viewport.Y / 720, viewport.X / 1280) * 0.92, 0.5, 1.5)
 
 	local cash = attr("Cash", 0)
 	shownCash += (cash - shownCash) * math.min(1, dt * 8)

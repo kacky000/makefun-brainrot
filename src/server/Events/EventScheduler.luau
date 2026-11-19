@@ -33,10 +33,6 @@ local current: CarnivalEvent? = nil
 local endsAt = 0
 local tint: ColorCorrectionEffect
 
-function EventScheduler.current(): CarnivalEvent?
-	return current
-end
-
 function EventScheduler.incomeMultiplier(): number
 	return if current then current.income else 1
 end
@@ -59,6 +55,10 @@ end
 
 function EventScheduler.waveSpeed(): number
 	return if current then current.waveSpeed else 1
+end
+
+function EventScheduler.current(): CarnivalEvent?
+	return current
 end
 
 local function publish()

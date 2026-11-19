@@ -7,6 +7,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
+local Feedback = require(game:GetService("ServerScriptService"):WaitForChild("World"):WaitForChild("Feedback"))
 
 local GateLock = {}
 
@@ -14,9 +15,7 @@ local services: { [string]: any } = {}
 local Remotes: Folder
 local pushDebounce: { [Player]: number } = {}
 
-local function notify(player: Player, text: string, color: Color3?)
-	(Remotes :: any).Notify:FireClient(player, text, color or Color3.fromRGB(255, 255, 255))
-end
+local notify = Feedback.notify
 
 function GateLock.isLocked(player: Player): boolean
 	local profile = services.PlayerData.get(player)

@@ -8,8 +8,9 @@ local RunService = game:GetService("RunService")
 
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 local BrainrotCatalog = require(ReplicatedStorage:WaitForChild("BrainrotCatalog"))
-local BrainrotModels = require(ReplicatedStorage:WaitForChild("BrainrotModels"))
+local BrainrotModels = require(game:GetService("ServerScriptService"):WaitForChild("World"):WaitForChild("BrainrotModels"))
 local MutationRoller = require(ReplicatedStorage:WaitForChild("MutationRoller"))
+local Feedback = require(game:GetService("ServerScriptService"):WaitForChild("World"):WaitForChild("Feedback"))
 
 type BeltItem = { model: Model, id: string, mut: string?, price: number, x: number }
 
@@ -22,9 +23,7 @@ local beltFolder: Folder
 local rng = Random.new()
 local BELT_TOP = 1.0
 
-local function notify(player: Player, text: string, color: Color3?)
-	(Remotes :: any).Notify:FireClient(player, text, color or Color3.fromRGB(255, 255, 255))
-end
+local notify = Feedback.notify
 
 local function placeOnBelt(item: BeltItem)
 	local bob = math.abs(math.sin(item.x * 0.5)) * 0.4

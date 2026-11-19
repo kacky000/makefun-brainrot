@@ -1,11 +1,12 @@
 --!strict
--- Builds a brainrot's 3D model from its catalog entry: a body archetype, googly eyes, accessories,
--- a mutation finish and a floating name / rarity / $-per-second tag. Used by the server for the
--- world and by the client for the Index book's previews.
+-- Builds a brainrot's 3D model: its hand-built parts (CastArt) or a body recipe with googly eyes, mouth and
+-- accessories, a mutation finish and a floating name / rarity / $-per-second card. Server-side; the client's
+-- Index book clones the previews this publishes.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local BrainrotCatalog = require(ReplicatedStorage:WaitForChild("BrainrotCatalog"))
+local CastArt = require(script.Parent:WaitForChild("CastArt"))
 local MutationRoller = require(ReplicatedStorage:WaitForChild("MutationRoller"))
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 
@@ -346,8 +347,9 @@ local ACCESSORIES: { [string]: (f: Frame, c3: Color3) -> { PartSpec } } = {
 
 -- The full part list of a catalog entry: hand-built parts, or a recipe of body + accessories.
 function BrainrotModels.partsFor(def: Brainrot): { PartSpec }
-	if def.parts then
-		return def.parts
+	local handBuilt = CastArt.parts[def.id]
+	if handBuilt then
+		return handBuilt
 	end
 	local recipe = assert(def.recipe, "brainrot " .. def.id .. " has neither parts nor recipe")
 	local frame = BODIES[recipe.body](recipe.c1, recipe.c2, recipe.c3)
@@ -553,6 +555,18 @@ function BrainrotModels.build(def: Brainrot, mutationName: string?, options: { t
 		makeTag(def, mutationName, height, opts.priceLine).Parent = root
 	end
 	return model
+end
+
+-- Publishes a tagless preview of every brainrot to ReplicatedStorage.CastPreviews for the Index book.
+function BrainrotModels.publishPreviews()
+	local folder = Instance.new("Folder")
+	folder.Name = "CastPreviews"
+	for _, def in BrainrotCatalog.list do
+		local model = BrainrotModels.build(def, nil, { tag = false, scale = 1 })
+		model.Name = def.id
+		model.Parent = folder
+	end
+	folder.Parent = ReplicatedStorage
 end
 
 -- Re-labels a model's price line (the conveyor shows prices, a pedestal does not).

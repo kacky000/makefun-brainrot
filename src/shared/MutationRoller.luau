@@ -25,6 +25,18 @@ for _, mutation in MutationRoller.list do
 	byName[mutation.name] = mutation
 end
 
+-- Rolls from the rarest down, so luck raises every chance; nil means a plain brainrot.
+function MutationRoller.rollMutation(luck: number, rng: Random): string?
+	for index = #MutationRoller.list, 1, -1 do
+		local mutation = MutationRoller.list[index]
+		if rng:NextNumber() < mutation.chance * luck then
+			return mutation.name
+		end
+	end
+	return nil
+end
+
+
 function MutationRoller.get(name: string?): Mutation?
 	if name == nil or name == "" then
 		return nil
@@ -35,17 +47,6 @@ end
 function MutationRoller.multiplier(name: string?): number
 	local mutation = MutationRoller.get(name)
 	return if mutation then mutation.multiplier else 1
-end
-
--- Rolls from the rarest down, so luck raises every chance; nil means a plain brainrot.
-function MutationRoller.rollMutation(luck: number, rng: Random): string?
-	for index = #MutationRoller.list, 1, -1 do
-		local mutation = MutationRoller.list[index]
-		if rng:NextNumber() < mutation.chance * luck then
-			return mutation.name
-		end
-	end
-	return nil
 end
 
 return MutationRoller
