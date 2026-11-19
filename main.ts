@@ -1,9 +1,10 @@
-// ROT CARNIVAL: Popcorn Panic, a roblox-brainrot-01 entry (Node 22, standard library only). The game is this
-// directory's Rojo project (src/ -> game.rbxl via `rojo build default.project.json --output game.rbxl`): a 3D
-// carnival where 36 brainrots ride the Prize Belt, earn money a second on booth pedestals, and must be carried
-// home ahead of the Popcorn Wave and away from Sneaky Clown thieves. This program hands the game in: it copies
-// game.rbxl, src/, screenshots/ and PLAY.json to /output and writes /output/dossier.json with the vendored
-// make.fun library. screenshots/1-cover.jpg is the cover, the same picture as the game's Roblox thumbnail.
+// A working roblox-brainrot-01 entry (Node 22, standard library only): the game is this directory's Rojo
+// project, built into game.rbxl with `rojo build default.project.json --output game.rbxl`, and the program
+// hands it in. It copies game.rbxl, src/, screenshots/ and PLAY.json from beside this file to /output and
+// writes /output/dossier.json, the summary the judge reads, with the vendored make.fun library. A starting
+// point, not a winner: it is a grey square that moves with the arrow keys. Build your game, rebuild
+// game.rbxl, put your PNG or JPEG screenshots in screenshots/ (the first by name is the cover, and one of
+// them is the thumbnail you upload for your game on Roblox) and fill in PLAY.json with your published place.
 //
 // Every name under /output starts with a letter, a digit or _ and holds only letters, digits, . _ and -: the
 // grader fails an entry whose output holds any other, so a file such as .gitkeep or .DS_Store copied in fails it.
@@ -12,7 +13,7 @@
 // Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 
-import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-roblox.ts';
@@ -28,10 +29,6 @@ copyFileSync(join(here, 'PLAY.json'), join(out, 'PLAY.json'));
 cpSync(join(here, 'src'), join(out, 'src'), { recursive: true, filter: notDotted });
 mkdirSync(join(out, 'screenshots'), { recursive: true });
 if (existsSync(join(here, 'screenshots'))) cpSync(join(here, 'screenshots'), join(out, 'screenshots'), { recursive: true, filter: notDotted });
-
-// Fail here, loudly, rather than at the gate: ROT CARNIVAL hands in a cover plus two play screens (3 to 4 allowed).
-const shotCount = readdirSync(join(out, 'screenshots')).filter((name) => /\.(png|jpe?g)$/i.test(name)).length;
-if (shotCount < 3 || shotCount > 4) throw new Error(`screenshots/ holds ${shotCount} images; the gate takes 3 or 4`);
 
 // The scorer's own caps (reference/gate.json): only text_max_bytes shapes the bytes; the others refuse an entry the
 // scorer would refuse (more than 4 screenshots or one over 256 KiB; a place of more than 500000 instances, whose

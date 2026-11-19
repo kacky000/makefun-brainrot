@@ -1,5 +1,1 @@
-{"tour": 1, "steps": [
-  {"screenshot": "1-cover.jpg", "wait_ms": 2000, "call": {"module": "ServerScriptService.TourDirector", "fn": "showcase", "arg": "cover", "on": "Server"}},
-  {"screenshot": "2-heist.jpg", "wait_ms": 3000, "call": {"module": "ServerScriptService.TourDirector", "fn": "showcase", "arg": "heist", "on": "Server"}},
-  {"screenshot": "3-index.jpg", "wait_ms": 2000, "call": {"module": "ServerScriptService.TourDirector", "fn": "showcase", "arg": "index", "on": "Server"}}
-]}
+{"tour": 1, "steps": [{"screenshot": "1-start.png"}, {"screenshot": "2-play.png", "keys": ["Right"], "wait_ms": 1000}, {"screenshot": "3-end.png", "keys": ["Down"], "wait_ms": 1000}]}
