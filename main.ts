@@ -1,10 +1,8 @@
-// A working roblox-brainrot-01 entry (Node 22, standard library only): the game is this directory's Rojo
-// project, built into game.rbxl with `rojo build default.project.json --output game.rbxl`, and the program
-// hands it in. It copies game.rbxl, src/, screenshots/ and PLAY.json from beside this file to /output and
-// writes /output/dossier.json, the summary the judge reads, with the vendored make.fun library. A starting
-// point, not a winner: it is a grey square that moves with the arrow keys. Build your game, rebuild
-// game.rbxl, put your PNG or JPEG screenshots in screenshots/ (the first by name is the cover, and one of
-// them is the thumbnail you upload for your game on Roblox) and fill in PLAY.json with your published place.
+// ROT CARNIVAL: Popcorn Panic, a roblox-brainrot-01 entry (Node 22, standard library only).
+// The game is this directory's Rojo project: src/ holds every script, world/Carnival.rbxm is the carnival that
+// tools/bake-world.luau bakes from CarnivalBuilder, and `rojo build default.project.json --output game.rbxl`
+// builds the place. This program hands it in: it copies game.rbxl, src/, screenshots/ and PLAY.json from
+// beside this file to /output and writes /output/dossier.json with the vendored make.fun library.
 //
 // Every name under /output starts with a letter, a digit or _ and holds only letters, digits, . _ and -: the
 // grader fails an entry whose output holds any other, so a file such as .gitkeep or .DS_Store copied in fails it.
@@ -23,6 +21,11 @@ const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 
 /** cpSync's filter: leave out every file and directory whose name starts with a dot (.gitkeep, .DS_Store, .git). */
 const notDotted = (path: string): boolean => !basename(path).startsWith('.');
+
+// The entry is nothing without its place file and play link: say which one is missing instead of a bare ENOENT.
+for (const needed of ['game.rbxl', 'PLAY.json', 'src']) {
+  if (!existsSync(join(here, needed))) throw new Error(`ROT CARNIVAL entry is missing ${needed}: build it first (see README.md)`);
+}
 
 copyFileSync(join(here, 'game.rbxl'), join(out, 'game.rbxl'));
 copyFileSync(join(here, 'PLAY.json'), join(out, 'PLAY.json'));
