@@ -1,18 +1,19 @@
-// ROT CARNIVAL: Popcorn Panic, a roblox-brainrot-01 entry (Node 22, standard library only).
-// The game is this directory's Rojo project: the Luau under src/ plus the baked carnival world
-// (world/Carnival.rbxm, written by `lune run tools/bake-world.luau` from the game's own
-// CarnivalBuilder), built into game.rbxl with `rojo build default.project.json --output game.rbxl`.
-// This program hands it in: it copies game.rbxl, src/, screenshots/ and PLAY.json from beside this
-// file to /output and writes /output/dossier.json, the summary the judge reads, with the vendored
-// make.fun library.
+// A working roblox-brainrot-01 entry (Node 22, standard library only): the game is this directory's Rojo
+// project, built into game.rbxl with `rojo build default.project.json --output game.rbxl`, and the program
+// hands it in. It copies game.rbxl, src/, screenshots/ and PLAY.json from beside this file to /output and
+// writes /output/dossier.json, the summary the judge reads, with the vendored make.fun library. A starting
+// point, not a winner: it is a grey square that moves with the arrow keys. Build your game, rebuild
+// game.rbxl, put your PNG or JPEG screenshots in screenshots/ (the first by name is the cover, and one of
+// them is the thumbnail you upload for your game on Roblox) and fill in PLAY.json with your published place.
 //
-// Every name under /output starts with a letter, a digit or _ and holds only letters, digits, . _ and -,
-// so src/ and screenshots/ are copied without any name that starts with a dot, at any depth.
+// Every name under /output starts with a letter, a digit or _ and holds only letters, digits, . _ and -: the
+// grader fails an entry whose output holds any other, so a file such as .gitkeep or .DS_Store copied in fails it.
+// So src/ and screenshots/ are copied without any name that starts with a dot, at any depth.
 //
 // Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 
-import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-roblox.ts';
@@ -23,16 +24,6 @@ const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 /** cpSync's filter: leave out every file and directory whose name starts with a dot (.gitkeep, .DS_Store, .git). */
 const notDotted = (path: string): boolean => !basename(path).startsWith('.');
 
-// Refuse to hand in a play link that names no published place: the gate would refuse it anyway.
-const play = JSON.parse(readFileSync(join(here, 'PLAY.json'), 'utf8')) as { url?: string; place_id?: number; universe_id?: number };
-if (!Number.isInteger(play.place_id) || !Number.isInteger(play.universe_id) || (play.place_id ?? 0) <= 0 || (play.universe_id ?? 0) <= 0) {
-  throw new Error('PLAY.json must name the published place: positive place_id and universe_id');
-}
-if (play.url !== undefined && !play.url.includes(String(play.place_id))) {
-  throw new Error('PLAY.json url must be the play link of place_id');
-}
-
-mkdirSync(out, { recursive: true });
 copyFileSync(join(here, 'game.rbxl'), join(out, 'game.rbxl'));
 copyFileSync(join(here, 'PLAY.json'), join(out, 'PLAY.json'));
 cpSync(join(here, 'src'), join(out, 'src'), { recursive: true, filter: notDotted });
