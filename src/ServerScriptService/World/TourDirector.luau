@@ -14,11 +14,11 @@ local TourDirector = {}
 local services
 
 -- A well-stocked booth: twelve brainrots across the rarity ladder, some mutated.
--- Each row is { pedestal slot, brainrot, mutation }. Slots 1 and 3 stay free for the scene's own purchases.
+-- Each row is { pedestal slot, brainrot, mutation }. Slots 1 and 2 stay free for the scene's own purchases.
 local SHOWCASE_BOOTH = {
-	{ 2, "kernelcorn", "Gold" },
-	{ 4, "elefanfare", "Neon" },
-	{ 5, "rhinoccino", nil },
+	{ 3, "rhinoccino", nil },
+	{ 4, "kernelcorn", "Gold" },
+	{ 5, "elefanfare", "Neon" },
 	{ 6, "fortuna", nil },
 	{ 7, "wheelio", "Buttered" },
 	{ 8, "clowncumber", nil },
@@ -98,12 +98,12 @@ function SCENES.cover(player: Player)
 	local _, dir = GameConfig.boothOrigin(booth)
 	services.EventScheduler.startEvent("GoldenHour", 600)
 	services.GateLock.lockGate(player, 600)
-	services.BasePedestals.placeBrainrotOnPedestal(player, "trofeo", "Gold", nil, 3)
+	services.BasePedestals.placeBrainrotOnPedestal(player, "trofeo", "Gold", nil, 1)
 	buyFromBelt(player, "popcornado", "Rainbow", GameConfig.boothPoint(booth, 0, 0, 0).X)
-	standPlayer(player, GameConfig.boothPoint(booth, 24, 0, 3.5), Vector3.new(-0.8, 0, -0.6 * dir))
+	standPlayer(player, GameConfig.boothPoint(booth, 8, 2, 3.5), Vector3.new(-0.7, 0, -0.7 * dir))
 	services.ThiefRaids.sendThief(player, 600, 1)
-	services.PopcornWave.startPopcornWave(GameConfig.boothPoint(booth, 0, 34, 0).X, 600)
-	services.notify(player, "camera", { from = GameConfig.boothPoint(booth, -28, -28, 16), to = GameConfig.boothPoint(booth, 10, 6, 7) })
+	services.PopcornWave.startPopcornWave(GameConfig.boothPoint(booth, 0, 48, 0).X, 600)
+	services.notify(player, "camera", { from = GameConfig.boothPoint(booth, -24, -25, 15), to = GameConfig.boothPoint(booth, 10, 4, 9) })
 	return "cover staged"
 end
 
@@ -120,7 +120,7 @@ function SCENES.belt(player: Player)
 	buyFromBelt(player, "kernelcorn", "Gold", x - 12)
 	standPlayer(player, GameConfig.boothPoint(booth, -36, -16, 3.5), Vector3.new(-1, 0, -0.3))
 	services.PopcornWave.startPopcornWave(x + 40, 600)
-	services.notify(player, "camera", { from = GameConfig.boothPoint(booth, -45, -49, 13), to = GameConfig.boothPoint(booth, -29, -4, 9) })
+	services.notify(player, "camera", { from = GameConfig.boothPoint(booth, -44, -42, 11), to = GameConfig.boothPoint(booth, -29, -4, 8) })
 	return "belt staged"
 end
 

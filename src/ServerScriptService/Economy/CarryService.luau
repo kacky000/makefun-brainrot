@@ -18,7 +18,7 @@ local deliveryHeld = false
 local carriedFolder
 local lastFullNotice = {}
 
-local CARRY_SCALE = 0.55
+local CARRY_SCALE = 0.78
 local CARRY_HEIGHT = 3.6
 
 -- Pay for a brainrot on the belt and lift it over the buyer's head. The server checks the money and the belt.

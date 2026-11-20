@@ -82,8 +82,8 @@ end
 local logo = label(screen, GameConfig.TITLE, UDim2.fromScale(0.36, 0.008), UDim2.fromScale(0.28, 0.07), GOLD)
 logo.TextStrokeColor3 = Color3.fromRGB(150, 30, 60)
 logo.TextStrokeTransparency = 0
-local pitch = card(UDim2.fromScale(0.5, 0.078), UDim2.fromScale(0.64, 0.04), Color3.fromRGB(255, 120, 200), 0.5)
-label(pitch, string.format("%s   %d BRAINROTS   7 RARITIES   5 MUTATIONS   WAVE   THIEVES   LOCK   REBIRTH", GameConfig.SUBTITLE, BrainrotCatalog.count()), UDim2.fromScale(0.02, 0.1), UDim2.fromScale(0.96, 0.8))
+local pitch = card(UDim2.fromScale(0.5, 0.076), UDim2.fromScale(0.42, 0.044), Color3.fromRGB(255, 120, 200), 0.5)
+label(pitch, string.format("%d BRAINROTS   7 RARITIES   5 MUTATIONS", BrainrotCatalog.count()), UDim2.fromScale(0.02, 0.08), UDim2.fromScale(0.96, 0.84))
 
 local eventBand = card(UDim2.fromScale(0.5, 0.126), UDim2.fromScale(0.34, 0.042), GOLD, 0.5)
 eventBand.Visible = false

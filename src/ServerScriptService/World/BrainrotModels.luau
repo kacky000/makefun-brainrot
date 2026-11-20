@@ -726,7 +726,7 @@ function BrainrotModels.attachLabel(model: Model, entry, mutation: string?, pric
 	gui.Name = "Label"
 	gui.Size = UDim2.fromScale(9.6 * grow, rows * 1.2 * grow)
 	gui.StudsOffset = Vector3.new(0, ((model:GetAttribute("TopY") or 6) + 1.3) * model:GetScale() + rows * 0.6 * grow + 0.5, 0)
-	gui.MaxDistance = price and 62 or 72
+	gui.MaxDistance = price and 62 or 54
 	-- Closer than this the card stops growing on screen, so a brainrot at arm's length does not hide the view.
 	gui.DistanceLowerLimit = 24
 	gui.LightInfluence = 0
