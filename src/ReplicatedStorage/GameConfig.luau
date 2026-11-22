@@ -96,7 +96,7 @@ end
 GameConfig.LOCK_COOLDOWN = 25
 
 GameConfig.WAVE = { every = 75, warning = 8, speed = 46, hitRange = 7 }
-GameConfig.THIEF = { firstAfter = 50, minGap = 70, maxGap = 110, walkSpeed = 15, fleeSpeed = 13, bonkRange = 7 }
+GameConfig.THIEF = { firstAfter = 50, minOwned = 3, minGap = 70, maxGap = 110, walkSpeed = 15, fleeSpeed = 13, bonkRange = 7 }
 
 GameConfig.EVENTS = {
 	GoldenHour = { title = "GOLDEN HOUR! x2 INCOME", color = Color3.fromRGB(255, 196, 40), seconds = 40 },

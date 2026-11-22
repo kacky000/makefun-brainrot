@@ -265,7 +265,17 @@ function ThiefRaids.runRaidLoop()
 		local now = os.clock()
 		for _, player in Players:GetPlayers() do
 			nextRaid[player] = nextRaid[player] or (now + GameConfig.THIEF.firstAfter)
-			if not ThiefRaids.paused and now >= nextRaid[player] and not thieves[player] then
+			-- A new player is left alone until they own a few brainrots: the clown never takes someone's only earner.
+			local owned = 0
+			local state = PlayerState.get(player)
+			for _, item in state and state.placed or {} do
+				if not item.stolen then
+					owned += 1
+				end
+			end
+			if owned < GameConfig.THIEF.minOwned then
+				nextRaid[player] = math.max(nextRaid[player], now + 20)
+			elseif not ThiefRaids.paused and now >= nextRaid[player] and not thieves[player] then
 				nextRaid[player] = now + random:NextNumber(GameConfig.THIEF.minGap, GameConfig.THIEF.maxGap)
 				if services.BasePedestals.mostValuableSlot(player) then
 					ThiefRaids.sendThief(player)

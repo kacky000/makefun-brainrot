@@ -39,8 +39,18 @@ function CarryService.buyAndCarryFromBelt(player: Player, beltItem): (boolean, s
 	-- The belt's copy is retired and a fresh body is welded to the buyer: a part the belt was moving every
 	-- frame keeps its belt position on the buyer's client when it is welded in the same step.
 	beltItem.model:Destroy()
-	CarryService.carry(player, beltItem.entry.id, beltItem.mutation, nil)
 	services.notify(player, "bought", { name = beltItem.entry.name, price = beltItem.price, rarity = beltItem.entry.rarity, mutation = beltItem.mutation })
+	-- A bought brainrot goes straight onto a pedestal in the buyer's booth and starts earning at once.
+	-- Only a full booth (or the screenshot tour) leaves it in the buyer's hands to carry.
+	if not deliveryHeld then
+		local slot = services.BasePedestals.placeBrainrotOnPedestal(player, beltItem.entry.id, beltItem.mutation, nil)
+		if slot then
+			PlayerState.discover(player, beltItem.entry.id)
+			return true
+		end
+		services.notify(player, "toast", { text = "BOOTH FULL! Buy MORE PEDESTALS or sell one (hold F)", color = "red" })
+	end
+	CarryService.carry(player, beltItem.entry.id, beltItem.mutation, nil)
 	return true
 end
 

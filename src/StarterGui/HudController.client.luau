@@ -164,7 +164,7 @@ local carryText = label(carryBand, "", UDim2.fromScale(0.02, 0.1), UDim2.fromSca
 local boughtCard = card(UDim2.fromScale(0.012, 0.86), UDim2.fromScale(0.235, 0.048), Color3.fromRGB(255, 224, 90))
 local boughtText = label(boughtCard, "BUY A BRAINROT FROM THE PRIZE BELT", UDim2.fromScale(0.03, 0.12), UDim2.fromScale(0.94, 0.76), Color3.fromRGB(255, 224, 90))
 local placedCard = card(UDim2.fromScale(0.012, 0.918), UDim2.fromScale(0.235, 0.048), GREEN)
-local placedText = label(placedCard, "CARRY IT TO YOUR BOOTH TO EARN $/s", UDim2.fromScale(0.03, 0.12), UDim2.fromScale(0.94, 0.76), GREEN)
+local placedText = label(placedCard, "BOUGHT BRAINROTS EARN $/s IN YOUR BOOTH", UDim2.fromScale(0.03, 0.12), UDim2.fromScale(0.94, 0.76), GREEN)
 
 HudPanels.buildPanels(screen, player, sendAction)
 
